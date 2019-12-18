@@ -2,6 +2,7 @@ import { storiesOf, html } from '@open-wc/demoing-storybook';
 import { formatDate } from '@lion/localize';
 import { IsDateDisabled, MinMaxDate } from '@lion/validate';
 import '../lion-input-datepicker.js';
+import './POCs/md-input-datepicker.js';
 
 storiesOf('Forms|Input Datepicker', module)
   .add(
@@ -61,5 +62,21 @@ storiesOf('Forms|Input Datepicker', module)
         readonly
         .modelValue="${new Date()}"
       ></lion-input-datepicker>
+    `,
+  )
+  .add(
+    'SubClassers',
+    () => html`
+      <style>
+        body {
+          font-family: Roboto, Noto Sans, -apple-system, BlinkMacSystemFont, sans-serif;
+          --color-primary: #2196f3;
+        }
+      </style>
+      <md-input-datepicker
+        .modelValue="${new Date()}"
+        label="Pick a date"
+        help-text="Pick a date, rakker"
+      ></md-input-datepicker>
     `,
   );
