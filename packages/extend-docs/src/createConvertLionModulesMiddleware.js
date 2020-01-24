@@ -14,10 +14,10 @@ const configs = configPaths.map(p => ({
   config: require(path.resolve(process.cwd(), p)),
 }));
 
-const overrideMDXPaths = glob.sync('**/stories/*.stories.override.mdx');
-const overrideMDXFiles = overrideMDXPaths.map(p => ({
+const overrideMdxPaths = glob.sync('**/stories/*.stories.override.mdx');
+const overrideMdxFiles = overrideMdxPaths.map(p => ({
   filePath: p,
-  mdx: fs.readFileSync(path.resolve(process.cwd(), p), 'utf8'),
+  raw: fs.readFileSync(path.resolve(process.cwd(), p), 'utf8'),
 }));
 
 function createConvertLionModulesMiddleware(userOptions) {
@@ -41,7 +41,7 @@ function createConvertLionModulesMiddleware(userOptions) {
         ...userOptions,
         url,
         configs,
-        overrideMDXFiles,
+        overrideMdxFiles,
         currentPackage: lionPackageName,
       };
       const html = convertLionModules(body, options);

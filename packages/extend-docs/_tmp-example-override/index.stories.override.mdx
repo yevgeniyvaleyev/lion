@@ -1,25 +1,29 @@
 import { chevronOpenRight } from '/icons/solid-arrows.js';
 
-<!-- [doc::replace-story id="h1_main"]
-($heading) => `ing ${$heading}`
+<!-- [doc::replace-heading "# Button"]
+({ heading }) => `
+${heading}
+
+A button is a widget that enables users to trigger an action or event, such as submitting a form,
+opening a dialog, canceling an action, or performing a delete operation. A common convention for
+informing users that a button launches a dialog is to append "…" (ellipsis) to the button label,
+e.g., "Save as…".
+`
 -->
 
 <!-- [doc::replace-heading "### Icon button"]
-(heading, body) => {
-  return `
-  ${heading}
-  ${body}
+({ src }) => `
+${src}
 
-  #### Simply the best
+#### Simply the best
 
-  ING buttons are the best buttons ever made by mankind.
-  `;
-}
+ING buttons are the best buttons ever made by mankind.
+`;
 -->
 
 <!-- [doc::replace-story "Icon"]
-(src) => {
-  return src.replace('iconSvg(html) Bug', 'chevronOpenRight(html) Next');
+({ src }) => {
+  return src.replace('Bug', 'Next');
 }
 -->
 
