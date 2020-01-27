@@ -6,10 +6,14 @@
  */
 // eslint-disable-next-line consistent-return
 function walkAst(curNode, processFn, parentNode = null) {
-  processFn(curNode, parentNode);
+  let done = processFn(curNode, parentNode);
+  if (done) return true;
+
   if (curNode.children) {
-    curNode.children.forEach(childNode => {
-      walkAst(childNode, processFn, curNode);
+    // eslint-disable-next-line
+    curNode.children.some(childNode => {
+      done = walkAst(childNode, processFn, curNode);
+      if (done) return true;
     });
   }
 }

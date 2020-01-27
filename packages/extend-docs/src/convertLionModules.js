@@ -1,8 +1,8 @@
 const path = require('path');
 const mdxToAst = require('./utils/mdxToAst.js');
 const astToMdx = require('./utils/astToMdx.js');
-const createOverriddenAst = require('./utils/createOverriddenAst.js');
-const createOverrideConfigFromAst = require('./utils/createOverrideConfigFromAst.js');
+const createExtendedAst = require('./utils/createExtendedAst.js');
+const createExtendConfig = require('./utils/createExtendConfig.js');
 
 const { convertModule } = require('./convertModule.js');
 
@@ -79,17 +79,18 @@ function findOverrideMdx(overridePaths, url) {
 }
 
 /**
- * @desc Merges the overrides for current mdx found in extension into current mdx
+ * @desc Merges the overrides for current mdx found in extension
  * @param {string} mdxSource
  * @param {string} overrideMdxSource
  */
-function processOverrideMdx(mdxSource, overrideMdxSource) {
-  const [ast, overrideAst] = [mdxToAst(mdxSource), mdxToAst(overrideMdxSource)];
+function processOverrideMdx(mdxSource, mdxExtendSource) {
+  const [ast, overrideAst] = [mdxToAst(mdxSource), mdxToAst(mdxExtendSource)];
   // Adjust the original Lion AST, so that it can be converted back into .mdx with overrides
-  const replacementAst = createOverriddenAst(
+  const replacementAst = createExtendedAst(
     ast,
-    createOverrideConfigFromAst(overrideAst),
+    createExtendConfig(overrideAst),
     mdxSource,
+    mdxExtendSource,
   );
   // Get the result .mdx with all extension overrides
   return astToMdx(replacementAst, mdxSource);
@@ -171,7 +172,7 @@ function convertLionModules(
   const overrideMdx = findOverrideMdx(overrideMdxFiles, url);
   if (overrideMdx) {
     outCode = processOverrideMdx(outCode, overrideMdx.raw);
-    console.log('outCode', outCode);
+    // console.log('outCode', outCode);
   }
 
   componentNames.forEach(componentName => {
