@@ -38,8 +38,7 @@ const defaultComponentNames = [
   'tooltip-arrow',
 ];
 
-const onlyProcess = ['form-system'];
-
+const onlyProcess = ['form-system', 'overlays'];
 const processPackages = [...defaultComponentNames, ...onlyProcess];
 
 // const defaultClassNames = ['ajax', 'localize'];
@@ -78,20 +77,37 @@ function findOverrideMdx(overridePaths, url) {
   return overrideMdx;
 }
 
+let globalOverrideConfig; // cached ast
+function getGlobalOverrideConfig(globalOverrideMdxSource) {
+  if (globalOverrideConfig === undefined) {
+    if (!globalOverrideMdxSource) {
+      globalOverrideConfig = null;
+      return;
+    }
+    const globalOverrideAst = mdxToAst(globalOverrideMdxSource);
+    globalOverrideConfig = createExtendConfig(globalOverrideAst);
+  }
+  return globalOverrideConfig;
+}
+
 /**
  * @desc Merges the overrides for current mdx found in extension
  * @param {string} mdxSource
  * @param {string} overrideMdxSource
  */
-function processOverrideMdx(mdxSource, mdxExtendSource) {
+function processOverrideMdx(mdxSource, mdxExtendSource, globalOverrideMdxSource) {
   const [ast, overrideAst] = [mdxToAst(mdxSource), mdxToAst(mdxExtendSource)];
+  const globalOverrideConfig = getGlobalOverrideConfig(globalOverrideMdxSource);
+  const localOverrideConfig = createExtendConfig(overrideAst);
   // Adjust the original Lion AST, so that it can be converted back into .mdx with overrides
   const replacementAst = createExtendedAst(
     ast,
-    createExtendConfig(overrideAst),
+    localOverrideConfig,
     mdxSource,
     mdxExtendSource,
+    globalOverrideConfig,
   );
+
   // Get the result .mdx with all extension overrides
   return astToMdx(replacementAst, mdxSource);
 }
@@ -107,10 +123,14 @@ function getConvertFileSpecificConfig(configs, url) {
     .reduce((acc, curr) => acc.concat(curr), []);
 }
 
-const convertFileSpecifics = (code, cfg) => {
+const convertFileSpecifics = (code, cfg, isRollup) => {
   let newCode = code;
   cfg.forEach(replacer => {
-    newCode = newCode.replace(new RegExp(replacer.find, 'g'), replacer.replace);
+    let replacement = replacer.replace;
+    if (isRollup && replacer.replace.indexOf("'/") !== -1) {
+      replacement = replacer.replace.replace("'/", `'${process.cwd()}/`);
+    }
+    newCode = newCode.replace(new RegExp(replacer.find, 'g'), replacement);
   });
   return newCode;
 };
@@ -126,7 +146,6 @@ function convertLionModules(
     getClassImportPath,
     getTagImportPath,
     getIndexClassImportPath,
-    replaceClassGlobally,
     shouldReplaceTagGlobally = () => true,
     shouldReplaceClassGlobally = () => true,
     rootDir,
@@ -134,6 +153,7 @@ function convertLionModules(
     url,
     configs,
     overrideMdxFiles,
+    globalOverrideMdxSource,
   },
 ) {
   // do nothing for packages we don't wanna handle
@@ -166,14 +186,13 @@ function convertLionModules(
 
   let outCode = code;
 
-  const convertFileSpecificConfig = getConvertFileSpecificConfig(configs, url);
-  outCode = convertFileSpecifics(code, convertFileSpecificConfig);
-
   const overrideMdx = findOverrideMdx(overrideMdxFiles, url);
   if (overrideMdx) {
-    outCode = processOverrideMdx(outCode, overrideMdx.raw);
-    // console.log('outCode', outCode);
+    outCode = processOverrideMdx(outCode, overrideMdx.source, globalOverrideMdxSource);
   }
+
+  const convertFileSpecificConfig = getConvertFileSpecificConfig(configs, url);
+  outCode = convertFileSpecifics(outCode, convertFileSpecificConfig, isRollup);
 
   componentNames.forEach(componentName => {
     outCode = convertModule(outCode, {
@@ -192,11 +211,9 @@ function convertLionModules(
     // }
   });
 
-  replaceClassGlobally.forEach(klass => {
-    outCode = outCode.replace(
-      `Lion${klass}`,
-      `${outPrefix.charAt(0).toUpperCase() + outPrefix.substring(1)}${klass}`,
-    );
+  const cfg = require(path.resolve(process.cwd(), '.storybook/extend-docs.config.js'));
+  cfg.forEach(replacer => {
+    outCode = outCode.replace(new RegExp(replacer.find, 'g'), replacer.replace);
   });
 
   // if (shouldReplaceTagGlobally({ outPackageName: currentPackage })) {
@@ -218,17 +235,17 @@ function convertLionModules(
   //   });
   // });
 
-  // Make sure all local <.* src="(.*)" are resolved to a path inside @lion
-  outCode = outCode.replace(new RegExp('<.* src="(.*)"', 'g'), ($0, $1) => {
-    // const lionRoot = path.resolve(rootDir, 'node_modules/@lion');
-    const lionRoot = path.resolve(__dirname, '../../../');
+  // // Make sure all local <.* src="(.*)" are resolved to a path inside @lion
+  // outCode = outCode.replace(new RegExp('<.* src="(.*)"', 'g'), ($0, $1) => {
+  //   // const lionRoot = path.resolve(rootDir, 'node_modules/@lion');
+  //   const lionRoot = path.resolve(__dirname, '../../../');
 
-    const diff = path.relative(rootDir, lionRoot);
-    // When serving as @lion as dependency, we don't have 'packages/' ...
-    const withoutPackagesFolder = $1.replace('packages/', '');
-    const replaced = $0.replace($1, path.join(diff, withoutPackagesFolder));
-    return replaced;
-  });
+  //   const diff = path.relative(rootDir, lionRoot);
+  //   // When serving as @lion as dependency, we don't have 'packages/' ...
+  //   const withoutPackagesFolder = $1.replace('packages/', '');
+  //   const replaced = $0.replace($1, path.join(diff, withoutPackagesFolder));
+  //   return replaced;
+  // });
 
   return outCode;
 }

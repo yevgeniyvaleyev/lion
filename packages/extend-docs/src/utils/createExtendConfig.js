@@ -1,6 +1,10 @@
 // const walkAst = require('./walkAst.js');
 const safeEval = require('./safeEval.js');
 
+/**
+ * @desc retrieves type, target and replaceFn if of type [doc::replace-{type} "{target}"]
+ * @param {*} node
+ */
 function getDocCommentNode(node) {
   const match = node.value && node.value.match(/\[doc::(.*?)\s+"(.*)"\]((.|\n)*)/);
   if (match) {

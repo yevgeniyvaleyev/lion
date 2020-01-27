@@ -10,6 +10,34 @@ function findStoryMeta(astNode) {
   return null;
 }
 
+/**
+ * @desc Find all nodes in scope of the commentNode being hooked into (story, heading, code block)
+ * - find succeeding codeblocks and paragraphs for a story
+ * - find succeeding nodes till next heading/story for a heading
+ * - etc ...
+ * @param {ASTNode} startNode this is the found node (type='heading' fro instance)
+ * @param {ASTNode} parentNode parent of startNode
+ * @param {function} haltFn when to return siblingsInScope
+ */
+function getSiblingsInScope(startNode, parentNode, haltFn) {
+  let spliceOffset = 1; // Determines the amount of astNodes that will be replaced in the original lion AST
+  const scopedNodes = [startNode]; // startNode is always in scope as well.
+  const nodeIdx = parentNode.children.indexOf(startNode);
+  const succeedingSiblings = parentNode.children.slice(nodeIdx + 1);
+  succeedingSiblings.some((node, i) => {
+    if (haltFn(node, i)) {
+      // Delete nodes from lion ast, so that we don't write them again
+      spliceOffset += i;
+      return true;
+    }
+    scopedNodes.push(node);
+    return false;
+  });
+  return {
+    spliceOffset, scopedNodes,
+  };
+}
+
 function createDocNode(newValue, startOffset) {
   return {
     type: 'doc::raw-mdx-output',
@@ -24,63 +52,48 @@ function createDocNode(newValue, startOffset) {
 function adjustHeading(lionAstNode, parentNode, headingToAdjust, mdxSource) {
   const siblings = parentNode.children;
   const nodeIdx = siblings.indexOf(lionAstNode);
-
   /**
-   * 1. Lookahead
+   * 1. Look ahead
    * Find all siblings of the heading. Stop when we find the next h1, h2, or h3, or a story
    */
-  const headingScopedSiblings = [lionAstNode]; // Keeps track of all siblings found after current
-  const succeedingSiblings = siblings.slice(nodeIdx + 1);
-  let spliceOffset = 1;
-  succeedingSiblings.some((node, i) => {
-    if ((node.type === 'heading' && node.depth < 4) || findStoryMeta(node)) {
-      // Delete nodes from lionAst, so that we don't write them again
-      spliceOffset += i;
-      return true;
-    }
-    headingScopedSiblings.push(node);
-    return false;
-  });
-
+  const lastNode = siblings[siblings.length -1];
+  const haltFn = (node) => { return (node.type === 'heading' && node.depth < 4) || findStoryMeta(node) || lastNode === node };
+  const { spliceOffset, scopedNodes } = getSiblingsInScope(lionAstNode, parentNode, haltFn);
   /**
    * 2. Put the result back in the original lion AST
    */
-  // Now insert the replaced, raw mdx node
-  let newValue = '\n';
+  let newValue = '\n\n';
   if (headingToAdjust.replaceFn) {
-    const ast = { children: headingScopedSiblings };
+    const ast = { children: scopedNodes };
     const src = new HString(astToMdx(ast, mdxSource));
     const heading = new HString(
       `${'#'.repeat(lionAstNode.depth)} ${lionAstNode.children[0].value}`,
     );
     const body = new HString(src.replace(heading, ''));
-    newValue = `${headingToAdjust.replaceFn({ src, heading, body }, { ast })}\n`;
+    newValue = `${headingToAdjust.replaceFn({ src, heading, body }, { ast })}\n\n`;
   }
   siblings.splice(nodeIdx, spliceOffset, createDocNode(newValue, siblings[nodeIdx].position.start));
 }
 
 function adjustStory(lionAstNode, parentNode, storyToAdjust, mdxSource) {
-  const siblings = parentNode.children;
-  const nodeIdx = siblings.indexOf(lionAstNode);
-
   /**
-   * 1. Lookahead
+   * 1. Look ahead
    * Find all siblings of the heading. Stop when we find the next h1, h2, or h3, or a story
    */
-  const storyScopedSiblings = [lionAstNode]; // Keeps track of all siblings found after current
-  let spliceOffset = 1;
-  const nextSibling = siblings[nodeIdx + 1];
-  if (nextSibling && nextSibling.type === 'code') {
-    storyScopedSiblings.push(nextSibling);
-    spliceOffset += 1;
-  }
+  const haltFn = (node, i) => i === 1 ; ///node.type !== 'paragraph' || node.type !== 'code';
+  const { spliceOffset, scopedNodes } = getSiblingsInScope(lionAstNode, parentNode, haltFn);
 
-  let newValue = '\n';
+  /**
+   * 2. Insert in original AST
+   */
+  let newValue = '\n\n';
   if (storyToAdjust.replaceFn) {
-    const ast = { children: storyScopedSiblings };
+    const ast = { children: scopedNodes };
     const src = new HString(astToMdx(ast, mdxSource));
-    newValue = `${storyToAdjust.replaceFn({ src }, { ast })}\n`;
+    newValue = `${storyToAdjust.replaceFn({ src }, { ast })}\n\n`;
   }
+  const siblings = parentNode.children;
+  const nodeIdx = siblings.indexOf(lionAstNode);
   siblings.splice(nodeIdx, spliceOffset, createDocNode(newValue, siblings[nodeIdx].position.start));
 }
 
@@ -94,22 +107,15 @@ function adjustLionAst(overrideMap, mdxSource) {
   });
 }
 
-function appendToLionAst(ast, additions, mdxExtendSource) {
+function appendToLionAst(ast, additions, mdxSource, mdxExtendSource) {
   const insertionPointNodeBottom = ast.children[ast.children.length - 1];
   const insertionPointNodeTop = ast.children[0];
-
-  // let prevNode = null;
-  // walkAst(ast, (curNode, parentNode) => {
-  //   if (curNode.type !== 'import') {
-  //     insertionPointNodeTop = prevNode;
-  //     return true; // tells walkAst we're done walking
-  //   }
-  //   prevNode = curNode;
-  // });
-
   additions.forEach(additionNode => {
+    // Note: spaces are needed to parse mdx correctly
     const value = `
+
 ${astToMdx({ children: [additionNode] }, mdxExtendSource)}
+
 `;
     // Either we add imports to the top, or add everything else to the bottom
     if (additionNode.type === 'import') {
@@ -118,8 +124,9 @@ ${astToMdx({ children: [additionNode] }, mdxExtendSource)}
         createDocNode(value, insertionPointNodeTop.position.start),
       );
     } else {
+      const length = astToMdx(insertionPointNodeBottom, mdxSource);
       const offset =
-        insertionPointNodeBottom.position.start.offset + insertionPointNodeBottom.value.length;
+        insertionPointNodeBottom.position.start.offset + length;
       ast.children.push(additionNode, createDocNode(value, { offset }));
     }
   });
@@ -133,13 +140,11 @@ ${astToMdx({ children: [additionNode] }, mdxExtendSource)}
  */
 function createExtendedAst(ast, { overrides, additions }, mdxSource, mdxExtendSource) {
   const overrideMap = [];
-
   // Fill overrideMap
   walkAst(ast, (lionAstNode, parentNode) => {
     if (!parentNode) {
       return;
     }
-
     // We only hook into headings and stories
     if (lionAstNode.type === 'heading') {
       /**
@@ -156,12 +161,11 @@ function createExtendedAst(ast, { overrides, additions }, mdxSource, mdxExtendSo
           value === lionAstNode.children[0].value
         );
       });
-
       if (headingToAdjust) {
         overrideMap.push({ lionAstNode, parentNode, override: headingToAdjust, type: 'heading' });
       }
     } else if (lionAstNode.type === 'jsx') {
-      // Try to convert to stpry meta
+      // Try to convert to story meta
       const lionStoryMeta = findStoryMeta(lionAstNode);
       if (lionStoryMeta) {
         const override = overrides.find(
@@ -173,9 +177,8 @@ function createExtendedAst(ast, { overrides, additions }, mdxSource, mdxExtendSo
       }
     }
   });
-
   adjustLionAst(overrideMap, mdxSource);
-  appendToLionAst(ast, additions, mdxExtendSource);
+  appendToLionAst(ast, additions, mdxSource, mdxExtendSource);
   return ast;
 }
 

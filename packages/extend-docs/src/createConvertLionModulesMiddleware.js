@@ -1,24 +1,9 @@
 // TODO: Remove this ignore once moved to lion monorepo
 // eslint-disable-next-line import/no-extraneous-dependencies
-const glob = require('glob');
-const path = require('path');
-const fs = require('fs');
 const storiesPatternsToFiles = require('@open-wc/demoing-storybook/src/shared/storiesPatternsToFiles.js');
 
 const { convertLionModules } = require('./convertLionModules.js');
-
-const configPaths = glob.sync('**/extend-docs.config.js', { dot: true });
-const configs = configPaths.map(p => ({
-  filePath: p,
-  // eslint-disable-next-line global-require, import/no-dynamic-require
-  config: require(path.resolve(process.cwd(), p)),
-}));
-
-const overrideMdxPaths = glob.sync('**/stories/*.stories.override.mdx');
-const overrideMdxFiles = overrideMdxPaths.map(p => ({
-  filePath: p,
-  raw: fs.readFileSync(path.resolve(process.cwd(), p), 'utf8'),
-}));
+const { configs, overrideMdxFiles, globalOverrideMdxSource } = require('./common.js');
 
 function createConvertLionModulesMiddleware(userOptions) {
   let storyFilesCache;
@@ -42,6 +27,7 @@ function createConvertLionModulesMiddleware(userOptions) {
         url,
         configs,
         overrideMdxFiles,
+        globalOverrideMdxSource,
         currentPackage: lionPackageName,
       };
       const html = convertLionModules(body, options);

@@ -3,6 +3,7 @@ const MagicString = require('magic-string');
 const storiesPatternsToFiles = require('@open-wc/demoing-storybook/src/shared/storiesPatternsToFiles.js');
 
 const { convertLionModules } = require('./convertLionModules.js');
+const { configs, overrideMdxFiles } = require('./common.js');
 
 const convertLionModulesPlugin = userOptions => {
   let storyFilesCache;
@@ -23,6 +24,9 @@ const convertLionModulesPlugin = userOptions => {
       if (lionPackageName && storyFiles.includes(id)) {
         const options = {
           ...userOptions,
+          url: id,
+          configs,
+          overrideMdxFiles,
           currentPackage: lionPackageName,
         };
         const html = convertLionModules(code, options);

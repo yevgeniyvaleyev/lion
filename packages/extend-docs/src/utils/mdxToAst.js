@@ -17,6 +17,7 @@ function mdxToAst(src) {
     return { error };
   }
 
+  // console.log('mdast', mdast);
   return mdast;
 }
 

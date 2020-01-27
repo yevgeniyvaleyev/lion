@@ -34,7 +34,6 @@ function astToMdx(ast, sourceCode) {
     }
   }
   processLvl(ast.children);
-  // console.log('aussput', output);
   return output;
 }
 
