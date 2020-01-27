@@ -110,7 +110,7 @@ function appendToLionAst(ast, additions, mdxExtendSource) {
   additions.forEach(additionNode => {
     const value = `
 ${astToMdx({ children: [additionNode] }, mdxExtendSource)}
-    `;
+`;
     // Either we add imports to the top, or add everything else to the bottom
     if (additionNode.type === 'import') {
       ast.children.unshift(
@@ -175,7 +175,6 @@ function createExtendedAst(ast, { overrides, additions }, mdxSource, mdxExtendSo
   });
 
   adjustLionAst(overrideMap, mdxSource);
-  console.log('additions', additions);
   appendToLionAst(ast, additions, mdxExtendSource);
   return ast;
 }
