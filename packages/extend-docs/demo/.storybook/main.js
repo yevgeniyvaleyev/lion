@@ -21,13 +21,13 @@ module.exports = {
         outPrefix: 'wolf',
         getIndexClassImportPath: ({ outPackageName, originalPath }) => {
           if (supportedPackages.includes(outPackageName)) {
-            return `../../../../packages/convert-lion-modules/demo/index.js`;
+            return `../../../../packages/extend-docs/demo/index.js`;
           }
           return originalPath;
         },
         getTagImportPath: ({ outPackageName, outTagName, originalPath }) => {
           if (supportedPackages.includes(outPackageName)) {
-            return `../../../../packages/convert-lion-modules/demo/${outTagName}.js`;
+            return `../../../../packages/extend-docs/demo/${outTagName}.js`;
           }
           return originalPath;
         },

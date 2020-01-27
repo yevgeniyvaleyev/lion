@@ -56,7 +56,7 @@ module.exports = {
         return `../../../../packages/${outPackageName}/index.js`;
       },
       getTagImportPath: ({ outTagName }) => {
-        return `../../../../packages/convert-lion-modules/demo/${outTagName}.js`;
+        return `../../../../packages/extend-docs/demo/${outTagName}.js`;
       },
     }),
   ],
@@ -80,9 +80,9 @@ module.exports = {
 
 #### Global string replacers (e.g. installation `npm i —save @lion…`)
 
-`/stories/convert-modules.config.js`:
+`/stories/extend-docs.config.js`:
 
-```js
+````js
 module.exports = [
   { find: 'npm i --save @lion\\/.*', replace: 'npm i --save ing-web' },
   {
@@ -90,11 +90,11 @@ module.exports = [
     replace: "```js\nimport 'ing-web/ing-$1.js'\n```",
   },
 ];
-```
+````
 
 #### Or package based
 
-`/packages/tooltip/stories/convert-modules.config.js`:
+`/packages/tooltip/stories/extend-docs.config.js`:
 
 ```js
 module.exports = [
@@ -118,6 +118,7 @@ To replace entirely:
 
 ```md
 <!- [eld::adjust] header=“Disabled”
+
 ## Disabled
 
 Hello, I replace this section entirely
@@ -129,7 +130,7 @@ To replace something in a section:
 ```md
 <!- [eld::adjust] header=“Disabled”
 function(sectionString) {
-  return sectionString.replace(‘Hello’, ‘hi’);
+return sectionString.replace(‘Hello’, ‘hi’);
 }
 ->
 ```
@@ -139,7 +140,7 @@ To replace something in a story only:
 ```md
 <!- [eld::adjust] story=“Disabled”
 function(storyString) {
-  return storyString.replace(‘Hello’, ‘hi’);
+return storyString.replace(‘Hello’, ‘hi’);
 }
 ->
 ```
@@ -150,11 +151,11 @@ To add something easily without a function but with special markdown:
 
 ```md
 <!- [eld::adjust] header=“Disabled”
-$HEADING
+\$HEADING
 
 Here’s a notification at the top of the section, but under the heading
 
-$CONTENT
+\$CONTENT
 
 And finally, here’s some text at the end of the disabled section.
 ->
@@ -173,7 +174,7 @@ Adding an import is possible with function as well. Select the first heading on 
 ```md
 <!- [eld::adjust] header=“Button”
 function(sectionString) {
-  return sectionString.replace(sectionString, `import { myThing } from ‘./somewhere.js’; \\n\\n`);
+return sectionString.replace(sectionString, `import { myThing } from ‘./somewhere.js’; \\n\\n`);
 }
 ->
 ```
@@ -185,7 +186,7 @@ Section is everything under the heading up until heading of its own level or hig
 ```md
 <!- [eld::adjust] header=“Examples” deep
 function(sectionString) {
-  return sectionString.replace('Hello', 'Hi');
+return sectionString.replace('Hello', 'Hi');
 }
 ->
 ```
@@ -195,7 +196,7 @@ or section is everything under the heading up until heading of any level
 ```md
 <!- [eld::adjust] header=“Examples” shallow
 function(sectionString) {
-  return sectionString.replace('Hello', 'Hi');
+return sectionString.replace('Hello', 'Hi');
 }
 ->
 ```

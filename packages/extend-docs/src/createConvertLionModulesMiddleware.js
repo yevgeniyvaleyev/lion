@@ -7,7 +7,7 @@ const storiesPatternsToFiles = require('@open-wc/demoing-storybook/src/shared/st
 
 const { convertLionModules } = require('./convertLionModules.js');
 
-const configPaths = glob.sync('**/convert-modules.config.js', { dot: true });
+const configPaths = glob.sync('**/extend-docs.config.js', { dot: true });
 const configs = configPaths.map(p => ({
   filePath: p,
   // eslint-disable-next-line global-require, import/no-dynamic-require

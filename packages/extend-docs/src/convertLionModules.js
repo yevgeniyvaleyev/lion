@@ -101,7 +101,7 @@ function getConvertFileSpecificConfig(configs, url) {
     .filter(
       ({ filePath }) =>
         pkgNameLionLayer(url) === pkgNameExtLayer(filePath) ||
-        filePath === 'stories/convert-modules.config.js',
+        filePath === 'stories/extend-docs.config.js',
     )
     .map(({ config }) => config)
     .reduce((acc, curr) => acc.concat(curr), []);
