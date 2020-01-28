@@ -1,7 +1,7 @@
 /**
  * @param {string} str
  * @param {string|RegExp} from
- * @param {string} to can contain $1, $2 etc.
+ * @param {string} to
  */
 function gReplace(str, from, to) {
   const escapedFrom = ['$', '{', '}', '(', ')', '<', '>'].reduce(

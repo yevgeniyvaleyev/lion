@@ -14,8 +14,11 @@ const overrideMdxFiles = overrideMdxPaths.map(p => ({
   filePath: p,
   source: fs.readFileSync(path.resolve(process.cwd(), p), 'utf8'),
 }));
-const globalOverrideMdxSource = require(path.resolve(process.cwd(), './.storybook/*.stories.override.mdx'));
+const globalOverrideMdxPath = path.resolve(process.cwd(), './.storybook/*.stories.override.mdx');
+const globalOverrideMdxSource = fs.readFileSync(globalOverrideMdxPath, 'utf8');
 
 module.exports = {
-  configs, overrideMdxFiles, globalOverrideMdxSource,
-}
+  configs,
+  overrideMdxFiles,
+  globalOverrideMdxSource,
+};

@@ -9,15 +9,15 @@
     "storybook:build": "build-storybook --stories \"../calendar/stories/*.stories.{js,mdx}\" --output-dir ./storybook-static"
   },
   "dependencies": {
-    "@open-wc/demoing-storybook": "^1.8.4"
+    "@open-wc/demoing-storybook": "^1.8.3",
+    "@mdx-js/mdx": "^1.5.5",
+    "glob": "^7.1.6"
   },
   "devDependencies": {
-    "@lion/core": "0.4.0",
-    "@lion/calendar": "0.6.0",
-    "@mdx-js/mdx": "^1.5.5",
+    "@lion/core": "0.4.2",
+    "@lion/calendar": "0.6.5",
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
-    "onchange": "^6.1.0",
-    "glob": "^7.1.6"
+    "onchange": "^6.1.0"
   }
 }

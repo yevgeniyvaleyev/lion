@@ -77,37 +77,35 @@ function findOverrideMdx(overridePaths, url) {
   return overrideMdx;
 }
 
-let globalOverrideConfig; // cached ast
-function getGlobalOverrideConfig(globalOverrideMdxSource) {
-  if (globalOverrideConfig === undefined) {
-    if (!globalOverrideMdxSource) {
-      globalOverrideConfig = null;
-      return;
-    }
-    const globalOverrideAst = mdxToAst(globalOverrideMdxSource);
-    globalOverrideConfig = createExtendConfig(globalOverrideAst);
-  }
-  return globalOverrideConfig;
-}
+// let globalOverrideConfig; // cached ast
+// function getGlobalOverrideConfig(globalOverrideMdxSource) {
+//   if (globalOverrideConfig === undefined) {
+//     if (!globalOverrideMdxSource) {
+//       globalOverrideConfig = null;
+//       return;
+//     }
+//     const globalOverrideAst = mdxToAst(globalOverrideMdxSource);
+//     globalOverrideConfig = createExtendConfig(globalOverrideAst);
+//   }
+//   return globalOverrideConfig;
+// }
 
 /**
  * @desc Merges the overrides for current mdx found in extension
  * @param {string} mdxSource
  * @param {string} overrideMdxSource
  */
-function processOverrideMdx(mdxSource, mdxExtendSource, globalOverrideMdxSource) {
-  const [ast, overrideAst] = [mdxToAst(mdxSource), mdxToAst(mdxExtendSource)];
-  const globalOverrideConfig = getGlobalOverrideConfig(globalOverrideMdxSource);
-  const localOverrideConfig = createExtendConfig(overrideAst);
-  // Adjust the original Lion AST, so that it can be converted back into .mdx with overrides
-  const replacementAst = createExtendedAst(
-    ast,
-    localOverrideConfig,
-    mdxSource,
-    mdxExtendSource,
-    globalOverrideConfig,
-  );
-
+function processOverrideMdx(mdxSource, mdxExtendSource) {
+  let ast;
+  try {
+    ast = mdxToAst(mdxSource);
+  } catch (e) {
+    // We probably used meta.import in our file
+    return mdxSource;
+  }
+  const overrideAst = mdxToAst(mdxExtendSource);
+  const overrideConfig = createExtendConfig(overrideAst);
+  const replacementAst = createExtendedAst(ast, overrideConfig, mdxSource, mdxExtendSource);
   // Get the result .mdx with all extension overrides
   return astToMdx(replacementAst, mdxSource);
 }
@@ -148,7 +146,7 @@ function convertLionModules(
     getIndexClassImportPath,
     shouldReplaceTagGlobally = () => true,
     shouldReplaceClassGlobally = () => true,
-    rootDir,
+    // rootDir,
     isRollup = false,
     url,
     configs,
@@ -186,9 +184,12 @@ function convertLionModules(
 
   let outCode = code;
 
+  if (globalOverrideMdxSource) {
+    outCode = processOverrideMdx(outCode, globalOverrideMdxSource);
+  }
   const overrideMdx = findOverrideMdx(overrideMdxFiles, url);
   if (overrideMdx) {
-    outCode = processOverrideMdx(outCode, overrideMdx.source, globalOverrideMdxSource);
+    outCode = processOverrideMdx(outCode, overrideMdx.source);
   }
 
   const convertFileSpecificConfig = getConvertFileSpecificConfig(configs, url);
@@ -211,6 +212,7 @@ function convertLionModules(
     // }
   });
 
+  // eslint-disable-next-line import/no-dynamic-require, global-require
   const cfg = require(path.resolve(process.cwd(), '.storybook/extend-docs.config.js'));
   cfg.forEach(replacer => {
     outCode = outCode.replace(new RegExp(replacer.find, 'g'), replacer.replace);

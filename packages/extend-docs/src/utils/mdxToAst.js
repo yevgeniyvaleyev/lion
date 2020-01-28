@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-unresolved
 const mdx = require('@mdx-js/mdx');
 
 function mdxToAst(src) {
@@ -14,7 +14,8 @@ function mdxToAst(src) {
       ],
     });
   } catch (error) {
-    return { error };
+    throw new Error('parsing failed');
+    // return { error };
   }
 
   // console.log('mdast', mdast);
