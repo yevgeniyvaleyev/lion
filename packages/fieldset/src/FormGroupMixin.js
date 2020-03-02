@@ -335,7 +335,7 @@ export const FormGroupMixin = dedupeMixin(
         this.dirty = this._anyFormElementHas('dirty');
       }
 
-      __linkChildrenMessagesToParent(child) {
+      __linkParentMessagesToChild(child) {
         // aria-describedby of (nested) children
         let parent = this;
         while (parent) {
@@ -360,7 +360,7 @@ export const FormGroupMixin = dedupeMixin(
           child.makeRequestToBeDisabled();
         }
         // TODO: Unlink in removeFormElement
-        this.__linkChildrenMessagesToParent(child);
+        this.__linkParentMessagesToChild(child);
         this.validate();
       }
 

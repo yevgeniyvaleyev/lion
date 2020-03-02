@@ -240,7 +240,7 @@ export const ValidateMixin = dedupeMixin(
        * @desc The main function of this mixin. Triggered by:
        *  - a modelValue change
        *  - a change in the 'validators' array
-       * -  a change in the config of an individual Validator
+       *  - a change in the config of an individual Validator
        *
        * Three situations are handled:
        * - A.1 The FormControl is empty: further execution is halted. When the Required Validator

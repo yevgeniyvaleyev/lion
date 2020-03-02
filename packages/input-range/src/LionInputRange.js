@@ -86,7 +86,7 @@ export class LionInputRange extends LocalizeMixin(LionInput) {
   _inputGroupTemplate() {
     return html`
       <div>
-        <span class="input-range__value">${formatNumber(this.formattedValue)}</span>
+        <span class="input-range__value">${formatNumber(this.modelValue)}</span>
         <span class="input-range__unit">${this.unit}</span>
       </div>
       <div class="input-group">

@@ -230,12 +230,12 @@ describe('ChoiceInputMixin', () => {
 
     it('creates a formattedValue based on modelValue.value', async () => {
       const el = await fixture(`<choice-input></choice-input>`);
-      expect(el.formattedValue).to.equal('');
+      expect(el._formattedValue).to.equal('');
 
       const elementWithValue = await fixture(html`
         <choice-input .choiceValue=${'foo'}></choice-input>
       `);
-      expect(elementWithValue.formattedValue).to.equal('foo');
+      expect(elementWithValue._formattedValue).to.equal('foo');
     });
   });
 

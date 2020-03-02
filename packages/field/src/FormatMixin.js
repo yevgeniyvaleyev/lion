@@ -2,9 +2,10 @@
 
 import { dedupeMixin } from '@lion/core';
 import { Unparseable } from '@lion/validate';
+import { SyncUpdatableMixin } from '@lion/validate/src/utils/SyncUpdatableMixin.js';
 
 // For a future breaking release:
-// - do not allow the private `.formattedValue` as property that can be set to
+// - do not allow the private `._formattedValue` as property that can be set to
 // trigger a computation loop.
 // - do not fire events for those private and protected concepts
 // - simplify _calculateValues: recursive trigger lock can be omitted, since need for connecting
@@ -23,10 +24,10 @@ import { Unparseable } from '@lion/validate';
  * ## Flows
  * FormatMixin supports these two main flows:
  * [1] Application Developer sets `.modelValue`:
- *     Flow: `.modelValue` (formatter) -> `.formattedValue` -> `._inputNode.value`
+ *     Flow: `.modelValue` (formatter) -> `._formattedValue` -> `._inputNode.value`
  *                         (serializer) -> `.serializedValue`
  * [2] End user interacts with field:
- *     Flow: `@user-input-changed` (parser) -> `.modelValue` (formatter) -> `.formattedValue` - (debounce till reflect condition (formatOn) is met) -> `._inputNode.value`
+ *     Flow: `@user-input-changed` (parser) -> `.modelValue` (formatter) -> `._formattedValue` - (debounce till reflect condition (formatOn) is met) -> `._inputNode.value`
  *                                 (serializer) -> `.serializedValue`
  *
  * For backwards compatibility with the platform, we also support `.value` as an api. In that case
@@ -37,19 +38,19 @@ import { Unparseable } from '@lion/validate';
  * property for the concept of viewValue is thus called `.value`.
  * When reading code and docs, one should be aware that the term viewValue is mostly used, but the
  * terms can be used interchangeably.
- * The `.formattedValue` should be seen as the 'scheduled' viewValue. It is computed realtime and
+ * The `._formattedValue` should be seen as the 'scheduled' viewValue. It is computed realtime and
  * stores the output of formatter. It will replace viewValue. once condition `formatOn` is met.
  * Another difference is that formattedValue lives on `LionField`, whereas viewValue is shared
  * across `LionField` and `._inputNode`.
  *
  * For restoring serialized values fetched from a server, we could consider one extra flow:
  * [3] Application Developer sets `.serializedValue`:
- *     Flow: serializedValue (deserializer) -> `.modelValue` (formatter) -> `.formattedValue` -> `._inputNode.value`
+ *     Flow: serializedValue (deserializer) -> `.modelValue` (formatter) -> `._formattedValue` -> `._inputNode.value`
  */
 export const FormatMixin = dedupeMixin(
   superclass =>
     // eslint-disable-next-line no-unused-vars, no-shadow
-    class FormatMixin extends superclass {
+    class FormatMixin extends SyncUpdatableMixin(superclass) {
       static get properties() {
         return {
           /**
@@ -67,7 +68,6 @@ export const FormatMixin = dedupeMixin(
           modelValue: {
             type: Object,
           },
-
           /**
            * The view value is the result of the formatter function (when available).
            * The result will be stored in the native _inputNode (usually an input[type=text]).
@@ -79,10 +79,15 @@ export const FormatMixin = dedupeMixin(
            *
            * @private
            */
-          formattedValue: {
+          _formattedValue: {
             type: String,
           },
-
+          /**
+           * @readonly
+           */
+          viewValue: {
+            type: String,
+          },
           /**
            * The serialized version of the model value.
            * This value exists for maximal compatibility with the platform API.
@@ -101,16 +106,14 @@ export const FormatMixin = dedupeMixin(
           serializedValue: {
             type: String,
           },
-
-          /**
-           * Event that will trigger formatting (more precise, visual update of the view, so the
-           * user sees the formatted value)
-           * Default: 'change'
-           */
-          formatOn: {
-            type: String,
-          },
-
+          // /**
+          //  * Event that will trigger formatting (more precise, visual update of the view, so the
+          //  * user sees the formatted value)
+          //  * Default: 'change'
+          //  */
+          // formatOn: {
+          //   type: String,
+          // },
           /**
            * Configuration object that will be available inside the formatter function
            */
@@ -122,16 +125,15 @@ export const FormatMixin = dedupeMixin(
 
       _requestUpdate(name, oldVal) {
         super._requestUpdate(name, oldVal);
-
         if (name === 'modelValue' && this.modelValue !== oldVal) {
           this._onModelValueChanged({ modelValue: this.modelValue }, { modelValue: oldVal });
         }
         if (name === 'serializedValue' && this.serializedValue !== oldVal) {
           this._calculateValues({ source: 'serialized' });
         }
-        if (name === 'formattedValue' && this.formattedValue !== oldVal) {
-          this._calculateValues({ source: 'formatted' });
-        }
+        // if (name === '_formattedValue' && this._formattedValue !== oldVal) {
+        //   this._calculateValues({ source: 'formatted' });
+        // }
       }
 
       /**
@@ -179,6 +181,23 @@ export const FormatMixin = dedupeMixin(
       }
 
       /**
+       * @overridable
+       */
+      get viewValue() {
+        return this._inputNode ? this._inputNode.value : this.__viewValue;
+      }
+
+      /**
+       * @overridable
+       */
+      set viewValue(v) {
+        this.__viewValue = v;
+        if (this._inputNode) {
+          this._inputNode.value = v;
+        }
+      }
+
+      /**
        * Responsible for storing all representations(modelValue, serializedValue, formattedValue
        * and value) of the input value. Prevents infinite loops, so all value observers can be
        * treated like they will only be called once, without indirectly calling other observers.
@@ -200,9 +219,9 @@ export const FormatMixin = dedupeMixin(
             this.modelValue = this.__callParser();
           }
         }
-        if (source !== 'formatted') {
-          this.formattedValue = this.__callFormatter();
-        }
+        // if (source !== 'formatted') {
+        //   this.formattedValue = this.__callFormatter();
+        // }
         if (source !== 'serialized') {
           this.serializedValue = this.serializer(this.modelValue);
         }
@@ -210,7 +229,7 @@ export const FormatMixin = dedupeMixin(
         this.__preventRecursiveTrigger = false;
       }
 
-      __callParser(value = this.formattedValue) {
+      __callParser(value = this._formattedValue) {
         // A) check if we need to parse at all
 
         // A.1) The end user had no intention to parse
@@ -219,8 +238,8 @@ export const FormatMixin = dedupeMixin(
           // For backwards compatibility we return an empty string:
           // - it triggers validation for required validators (see ValidateMixin.validate())
           // - it can be expected by 3rd parties (for instance unit tests)
-          // TODO(@tlouisse): In a breaking refactor of the Validation System, this behavior can be corrected.
-          return '';
+          // TODO: (@tlouisse): In a breaking refactor of the Validation System, this behavior can be corrected.
+          return ''; // undefined;
         }
 
         // A.2) Handle edge cases We might have no view value yet, for instance because
@@ -245,32 +264,25 @@ export const FormatMixin = dedupeMixin(
       }
 
       __callFormatter() {
-        // - Why check for this.hasError?
+        if (this.modelValue instanceof Unparseable) {
+          // When the modelValue currently is unparseable, we need to sync back the supplied
+          // viewValue. In flow [2], this should not be needed.
+          // In flow [1] (we restore a previously stored modelValue) we should sync down, however.
+          return this.modelValue.viewValue;
+        }
+
+        // - Why check for this.invalid?
         // We only want to format values that are considered valid. For best UX,
         // we only 'reward' valid inputs.
         // - Why check for __isHandlingUserInput?
         // Downwards sync is prevented whenever we are in an `@user-input-changed` flow, [2].
         // If we are in a 'imperatively set `.modelValue`' flow, [1], we want to reflect back
         // the value, no matter what.
-        // This means, whenever we are in hasError and modelValue is set
+        // This means, whenever we are invalid and modelValue is set
         // imperatively, we DO want to format a value (it is the only way to get meaningful
         // input into `._inputNode` with modelValue as input)
-
-        if (
-          this.__isHandlingUserInput &&
-          this.hasFeedbackFor &&
-          this.hasFeedbackFor.length &&
-          this.hasFeedbackFor.includes('error') &&
-          this._inputNode
-        ) {
-          return this._inputNode ? this.value : undefined;
-        }
-
-        if (this.modelValue instanceof Unparseable) {
-          // When the modelValue currently is unparseable, we need to sync back the supplied
-          // viewValue. In flow [2], this should not be needed.
-          // In flow [1] (we restore a previously stored modelValue) we should sync down, however.
-          return this.modelValue.viewValue;
+        if (this.__isHandlingUserInput && this.invalid) {
+          return undefined;
         }
 
         return this.formatter(this.modelValue, this.formatOptions);
@@ -300,7 +312,7 @@ export const FormatMixin = dedupeMixin(
         // Downwards syncing should only happen for `LionField`.value changes from 'above'
         // This triggers _onModelValueChanged and connects user input to the
         // parsing/formatting/serializing loop
-        this.modelValue = this.__callParser(this.value);
+        this.modelValue = this.__callParser(this.viewValue);
       }
 
       /**
@@ -310,10 +322,23 @@ export const FormatMixin = dedupeMixin(
        *   `@user-input-changed` (this will happen later, when `formatOn` condition is met)
        */
       _reflectBackFormattedValueToUser() {
-        if (this._reflectBackOn()) {
+        this._formattedValue = this.__callFormatter();
+        if (this._formattedValue !== undefined && this._reflectBackOn()) {
           // Text 'undefined' should not end up in <input>
-          this.value = typeof this.formattedValue !== 'undefined' ? this.formattedValue : '';
+          // this.viewValue = typeof this.formattedValue !== 'undefined' ? this.formattedValue : '';
+          this.viewValue = this._formattedValue;
         }
+      }
+
+      // /**
+      //  * @overridable
+      //  */
+      // formatOn() {
+      //   return true; // !this.invalid;
+      // }
+
+      get invalid() {
+        return this.hasFeedbackFor && this.hasFeedbackFor.includes('error');
       }
 
       _reflectBackOn() {
@@ -343,7 +368,7 @@ export const FormatMixin = dedupeMixin(
 
       constructor() {
         super();
-        this.formatOn = 'change';
+        // this.formatOn = 'change';
         this.formatOptions = {};
       }
 
@@ -365,12 +390,17 @@ export const FormatMixin = dedupeMixin(
         if (typeof this.modelValue === 'undefined') {
           this._syncValueUpwards();
         }
-        this._reflectBackFormattedValueToUser();
+        // this._reflectBackFormattedValueToUser();
 
         if (this._inputNode) {
-          this._inputNode.addEventListener(this.formatOn, this._reflectBackFormattedValueDebounced);
+          this._inputNode.addEventListener('change', this._reflectBackFormattedValueDebounced);
           this._inputNode.addEventListener('input', this._proxyInputEvent);
         }
+      }
+
+      firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
+        this._reflectBackFormattedValueToUser();
       }
 
       disconnectedCallback() {
@@ -378,10 +408,7 @@ export const FormatMixin = dedupeMixin(
         this.removeEventListener('user-input-changed', this._onUserInputChanged);
         if (this._inputNode) {
           this._inputNode.removeEventListener('input', this._proxyInputEvent);
-          this._inputNode.removeEventListener(
-            this.formatOn,
-            this._reflectBackFormattedValueDebounced,
-          );
+          this._inputNode.removeEventListener('change', this._reflectBackFormattedValueDebounced);
         }
       }
     },

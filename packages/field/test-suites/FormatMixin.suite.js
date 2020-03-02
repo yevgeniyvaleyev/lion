@@ -6,8 +6,12 @@ import { Unparseable, Validator } from '@lion/validate';
 import { FormatMixin } from '../src/FormatMixin.js';
 
 function mimicUserInput(formControl, newViewValue) {
-  formControl.value = newViewValue; // eslint-disable-line no-param-reassign
+  formControl.viewValue = newViewValue; // eslint-disable-line no-param-reassign
   formControl._inputNode.dispatchEvent(new CustomEvent('input', { bubbles: true }));
+}
+
+function mimicInputLeave(formControl) {
+  formControl._inputNode.dispatchEvent(new CustomEvent('change', { bubbles: true }));
 }
 
 export function runFormatMixinSuite(customConfig) {
@@ -67,13 +71,13 @@ export function runFormatMixinSuite(customConfig) {
               `;
             }
 
-            set value(newValue) {
-              this._inputNode.value = newValue;
-            }
+            // set value(newValue) {
+            //   this._inputNode.value = newValue;
+            // }
 
-            get value() {
-              return this._inputNode.value;
-            }
+            // get value() {
+            //   return this._inputNode.value;
+            // }
 
             get _inputNode() {
               return this.querySelector('input');
@@ -143,27 +147,29 @@ export function runFormatMixinSuite(customConfig) {
       expect(counter).to.equal(2);
     });
 
-    it('has modelValue, formattedValue and serializedValue which are computed synchronously', async () => {
+    it('has modelValue, viewValue and serializedValue which are computed synchronously', async () => {
       expect(nonFormat.modelValue).to.equal('', 'modelValue initially');
-      expect(nonFormat.formattedValue).to.equal('', 'formattedValue initially');
+      expect(nonFormat._formattedValue).to.equal('', 'formattedValue initially');
+      expect(nonFormat.viewValue).to.equal('', 'viewValue initially');
       expect(nonFormat.serializedValue).to.equal('', 'serializedValue initially');
       const generatedValue = generateValueBasedOnType();
       nonFormat.modelValue = generatedValue;
       expect(nonFormat.modelValue).to.equal(generatedValue, 'modelValue as provided');
-      expect(nonFormat.formattedValue).to.equal(generatedValue, 'formattedValue synchronized');
+      expect(nonFormat._formattedValue).to.equal(generatedValue, 'formattedValue synchronized');
+      // expect(nonFormat.viewValue).to.equal(generatedValue, 'viewValue synchronized');
       expect(nonFormat.serializedValue).to.equal(generatedValue, 'serializedValue synchronized');
     });
 
     it('has an input node (like <input>/<textarea>) which holds the formatted (view) value', async () => {
       fooFormat.modelValue = 'string';
-      expect(fooFormat.formattedValue).to.equal('foo: string');
-      expect(fooFormat.value).to.equal('foo: string');
+      expect(fooFormat._formattedValue).to.equal('foo: string');
+      expect(fooFormat.viewValue).to.equal('foo: string');
       expect(fooFormat._inputNode.value).to.equal('foo: string');
     });
 
     it('converts modelValue => formattedValue (via this.formatter)', async () => {
       fooFormat.modelValue = 'string';
-      expect(fooFormat.formattedValue).to.equal('foo: string');
+      expect(fooFormat._formattedValue).to.equal('foo: string');
       expect(fooFormat.serializedValue).to.equal('[foo] string');
     });
 
@@ -173,7 +179,7 @@ export function runFormatMixinSuite(customConfig) {
     });
 
     it('converts formattedValue => modelValue (via this.parser)', async () => {
-      fooFormat.formattedValue = 'foo: string';
+      fooFormat._formattedValue = 'foo: string';
       expect(fooFormat.modelValue).to.equal('string');
     });
 
@@ -194,7 +200,7 @@ export function runFormatMixinSuite(customConfig) {
           ><input slot="input" value="string"/></${elem}>`);
       // Now check if the format/parse/serialize loop has been triggered
       await formatElem.updateComplete;
-      expect(formatElem.formattedValue).to.equal('foo: string');
+      expect(formatElem._formattedValue).to.equal('foo: string');
 
       expect(formatElem._inputNode.value).to.equal('foo: string');
 
@@ -215,12 +221,12 @@ export function runFormatMixinSuite(customConfig) {
       expect(formatEl._inputNode.value).to.not.equal(`foo: ${generatedModelValue}`);
 
       // user leaves field
-      formatEl._inputNode.dispatchEvent(new CustomEvent(formatEl.formatOn, { bubbles: true }));
+      mimicInputLeave(formatEl);
       await aTimeout();
       expect(formatEl._inputNode.value).to.equal(`foo: ${generatedModelValue}`);
     });
 
-    it('reflects back .formattedValue immediately when .modelValue changed imperatively', async () => {
+    it('reflects back ._formattedValue immediately when .modelValue changed imperatively', async () => {
       const el = await fixture(html`
         <${elem} .formatter="${value => `foo: ${value}`}">
           <input slot="input" />
@@ -265,7 +271,7 @@ export function runFormatMixinSuite(customConfig) {
         expect(formatterSpy.called).to.equal(true);
         expect(serializerSpy.called).to.equal(true);
 
-        el.formattedValue = 'raw';
+        mimicUserInput(el, 'raw');
         expect(parserSpy.called).to.equal(true);
       });
 
@@ -352,14 +358,14 @@ export function runFormatMixinSuite(customConfig) {
 
         expect(formatterSpy.callCount).to.equal(1);
         // Due to hasError, the formatter should not have ran.
-        expect(el.formattedValue).to.equal(generatedViewValueAlt);
+        expect(el._formattedValue).to.equal(generatedViewValueAlt);
 
         el.hasError = false;
         el.validators = [];
         mimicUserInput(el, generatedViewValue);
         expect(formatterSpy.callCount).to.equal(2);
 
-        expect(el.formattedValue).to.equal(`foo: ${generatedModelValue}`);
+        expect(el._formattedValue).to.equal(`foo: ${generatedModelValue}`);
       });
     });
 
@@ -385,8 +391,8 @@ export function runFormatMixinSuite(customConfig) {
           </${elem}>
         `);
         mimicUserInput(el, 'test');
-        expect(el.formattedValue).to.equal('test');
-        expect(el.value).to.equal('test');
+        expect(el._formattedValue).to.equal('test');
+        expect(el.viewValue).to.equal('test');
       });
 
       it('should display the viewValue when modelValue is of type Unparseable', async () => {
@@ -398,7 +404,7 @@ export function runFormatMixinSuite(customConfig) {
           </${elem}>
         `);
         el.modelValue = new Unparseable('foo');
-        expect(el.value).to.equal('foo');
+        expect(el.viewValue).to.equal('foo');
       });
     });
   });

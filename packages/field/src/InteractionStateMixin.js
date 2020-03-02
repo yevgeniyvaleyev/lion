@@ -91,6 +91,12 @@ export const InteractionStateMixin = dedupeMixin(
         }
         this.addEventListener(this._leaveEvent, this._iStateOnLeave);
         this.addEventListener(this._valueChangedEvent, this._iStateOnValueChange);
+        // this.initInteractionState();
+      }
+
+      firstUpdated(c) {
+        super.firstUpdated(c);
+        // await this.updateComplete;
         this.initInteractionState();
       }
 
@@ -112,6 +118,7 @@ export const InteractionStateMixin = dedupeMixin(
       initInteractionState() {
         this.dirty = false;
         this.prefilled = this.constructor._isPrefilled(this.modelValue);
+        this.__iStateInitialized = true;
       }
 
       /**
@@ -121,6 +128,9 @@ export const InteractionStateMixin = dedupeMixin(
        * @private
        */
       _iStateOnLeave() {
+        if (!this.__iStateInitialized) {
+          return;
+        }
         this.touched = true;
         this.prefilled = this.constructor._isPrefilled(this.modelValue);
       }
@@ -130,6 +140,9 @@ export const InteractionStateMixin = dedupeMixin(
        * @private
        */
       _iStateOnValueChange() {
+        if (!this.__iStateInitialized) {
+          return;
+        }
         this.dirty = true;
       }
 

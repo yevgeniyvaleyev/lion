@@ -18,7 +18,7 @@ export function runInteractionStateMixinSuite(customConfig) {
     ...customConfig,
   };
 
-  describe(`InteractionStateMixin`, async () => {
+  describe('InteractionStateMixin', async () => {
     let tag;
     before(() => {
       if (!cfg.tagString) {

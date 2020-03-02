@@ -1,4 +1,4 @@
-import { ChoiceInputMixin } from '@lion/choice-input';
+import { ChoiceInputLightMixin as ChoiceInputMixin } from '@lion/choice-input';
 import { css, DisabledMixin, html, LitElement } from '@lion/core';
 import { FormRegisteringMixin } from '@lion/field';
 
@@ -90,6 +90,7 @@ export class LionOption extends DisabledMixin(ChoiceInputMixin(FormRegisteringMi
     this.__onClick = () => {
       if (!this.disabled) {
         this.checked = true;
+        this.dispatchEvent(new Event('checked', { bubbles: true, composed: true }));
       }
     };
     this.addEventListener('click', this.__onClick);

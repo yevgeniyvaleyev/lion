@@ -1,11 +1,13 @@
 /* eslint-disable class-methods-use-this */
 
 import { html, css, nothing } from '@lion/core';
-import { FormatMixin } from '@lion/field';
+// import { FormatMixin } from '@lion/field';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { SyncUpdatableMixin } from '@lion/validate/src/utils/SyncUpdatableMixin.js';
 
-export const ChoiceInputMixin = superclass =>
+export const ChoiceInputLightMixin = superclass =>
   // eslint-disable-next-line
-  class ChoiceInputMixin extends FormatMixin(superclass) {
+  class ChoiceInputLightMixin extends SyncUpdatableMixin(superclass) {
     static get properties() {
       return {
         /**
@@ -15,72 +17,58 @@ export const ChoiceInputMixin = superclass =>
           type: Boolean,
           reflect: true,
         },
-        /**
-         * Whereas 'normal' `.modelValue`s usually store a complex/typed version
-         * of a view value, choice inputs have a slightly different approach.
-         * In order to remain their Single Source of Truth characteristic, choice inputs
-         * store both the value and 'checkedness', in the format { value: 'x', checked: true }
-         * Different from the platform, this also allows to serialize the 'non checkedness',
-         * allowing to restore form state easily and inform the server about unchecked options.
-         */
-        modelValue: {
-          type: Object,
-          hasChanged: (nw, old = {}) => nw.value !== old.value || nw.checked !== old.checked,
-        },
+        // /**
+        //  * Contributes to the parent (model) value when checked.
+        //  */
+        // value: String,
+        // /**
+        //  * Whereas 'normal' `.modelValue`s usually store a complex/typed version
+        //  * of a view value, choice inputs have a slightly different approach.
+        //  * In order to remain their Single Source of Truth characteristic, choice inputs
+        //  * store both the value and 'checkedness', in the format { value: 'x', checked: true }
+        //  * Different from the platform, this also allows to serialize the 'non checkedness',
+        //  * allowing to restore form state easily and inform the server about unchecked options.
+        //  */
+        // modelValue: {
+        //   type: Object,
+        //   hasChanged: (nw, old = {}) => nw.value !== old.value || nw.checked !== old.checked,
+        // },
         /**
          * The value property of the modelValue. It provides an easy interface for storing
-         * (complex) values in the modelValue
+         * (complex) values in the modelValue.
+         * Contributes to the parent (model) value when checked.
          */
         choiceValue: {
           type: Object,
+          attribute: 'choice-value',
         },
       };
     }
 
     get choiceValue() {
-      return this.modelValue.value;
+      return this.modelValue ? this.modelValue.value : this.__choiceValue;
     }
 
-    set choiceValue(value) {
-      this.requestUpdate('choiceValue', this.choiceValue);
-      if (this.modelValue.value !== value) {
-        this.modelValue = { value, checked: this.modelValue.checked };
+    set choiceValue(v) {
+      if (this.modelValue) {
+        this.modelValue.value = v;
       }
+      this.__choiceValue = v;
     }
 
-    _requestUpdate(name, oldValue) {
-      super._requestUpdate(name, oldValue);
+    updateSync(name, oldValue) {
+      super.updateSync(name, oldValue);
 
-      if (name === 'modelValue') {
-        if (this.modelValue.checked !== this.checked) {
-          this.__syncModelCheckedToChecked(this.modelValue.checked);
-        }
-      } else if (name === 'checked') {
-        if (this.modelValue.checked !== this.checked) {
-          this.__syncCheckedToModel(this.checked);
-        }
-      }
-    }
-
-    firstUpdated(c) {
-      super.firstUpdated(c);
-      if (c.has('checked')) {
-        // Here we set the initial value for our [slot=input] content,
-        // which has been set by our SlotMixin
+      if (name === 'checked') {
         this.__syncCheckedToInputElement();
-      }
-    }
-
-    updated(c) {
-      super.updated(c);
-      if (c.has('modelValue')) {
-        this.__syncCheckedToInputElement();
+        this.dispatchEvent(new Event('checked', { bubbles: true, composed: true }));
       }
     }
 
     constructor() {
       super();
-      this.modelValue = { value: '', checked: false };
+      // this.modelValue = { value: '', checked: false };
+      this.checked = false;
     }
 
     /**
@@ -109,7 +97,7 @@ export const ChoiceInputMixin = superclass =>
       return html`
         <slot name="input"></slot>
         <div class="choice-field__graphic-container">
-          ${this.choiceGraphicTemplate()}
+          ${this._choiceGraphicTemplate()}
         </div>
         <div class="choice-field__label">
           <slot name="label"></slot>
@@ -117,7 +105,7 @@ export const ChoiceInputMixin = superclass =>
       `;
     }
 
-    choiceGraphicTemplate() {
+    _choiceGraphicTemplate() {
       return nothing;
     }
 
@@ -133,14 +121,6 @@ export const ChoiceInputMixin = superclass =>
 
     __toggleChecked() {
       this.checked = !this.checked;
-    }
-
-    __syncModelCheckedToChecked(checked) {
-      this.checked = checked;
-    }
-
-    __syncCheckedToModel(checked) {
-      this.modelValue = { value: this.choiceValue, checked };
     }
 
     __syncCheckedToInputElement() {
@@ -170,34 +150,6 @@ export const ChoiceInputMixin = superclass =>
      * Therefore we disable the input event here.
      */
     _proxyInputEvent() {}
-
-    /**
-     * @override
-     * hasChanged is designed for async (updated) callback, also check for sync
-     * (_requestUpdate) callback
-     */
-    _onModelValueChanged({ modelValue }, { modelValue: old }) {
-      if (this.constructor._classProperties.get('modelValue').hasChanged(modelValue, old)) {
-        super._onModelValueChanged({ modelValue });
-      }
-    }
-
-    /**
-     * @override
-     * Overridden from FormatMixin, since a different modelValue is used for choice inputs.
-     * Sets modelValue based on checked state (instead of value), so that changes will be detected.
-     */
-    parser() {
-      return this.modelValue;
-    }
-
-    /**
-     * @override
-     * Overridden from FormatMixin, since a different modelValue is used for choice inputs.
-     */
-    formatter(modelValue) {
-      return modelValue && modelValue.value !== undefined ? modelValue.value : modelValue;
-    }
 
     /**
      * Used for required validator.

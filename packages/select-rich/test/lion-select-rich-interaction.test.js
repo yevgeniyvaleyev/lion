@@ -268,7 +268,7 @@ describe('lion-select-rich interactions', () => {
           </lion-options>
         </lion-select-rich>
       `);
-      expect(el.modelValue).to.equal(10);
+      expect(el.querySelector('lion-option').checked).to.equal(true);
     });
 
     it('cannot be navigated with keyboard if disabled', async () => {
@@ -280,8 +280,10 @@ describe('lion-select-rich interactions', () => {
           </lion-options>
         </lion-select-rich>
       `);
+      const options = el.querySelectorAll('lion-option');
+      expect(options[0].checked).to.equal(true);
       el._listboxNode.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown' }));
-      expect(el.modelValue).to.equal(10);
+      expect(options[0].checked).to.equal(true);
     });
 
     it('cannot be opened via click if disabled', async () => {
@@ -510,6 +512,8 @@ describe('lion-select-rich interactions', () => {
           </lion-options>
         </lion-select-rich>
       `);
+      await el.registrationReady;
+      // el.initInteractionState();
       expect(el.dirty).to.be.false;
       el.modelValue = 20;
       expect(el.dirty).to.be.true;
@@ -641,7 +645,7 @@ describe('lion-select-rich interactions', () => {
         <lion-select-rich .validators=${[new Required()]}>
           <lion-options slot="input">
             <lion-option .choiceValue=${null}>Please select a value</lion-option>
-            <lion-option .modelValue=${{ value: 10, checked: true }}>Item 1</lion-option>
+            <lion-option .choiceValue=${10} checked>Item 1</lion-option>
           </lion-options>
         </lion-select-rich>
       `);

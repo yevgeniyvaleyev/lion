@@ -1,7 +1,7 @@
 import { ChoiceGroupMixin } from '@lion/choice-input';
 import { css, html, LitElement, SlotMixin } from '@lion/core';
 import { FormControlMixin, FormRegistrarMixin, InteractionStateMixin } from '@lion/field';
-import { formRegistrarManager } from '@lion/field/src/registration/formRegistrarManager.js';
+// import { formRegistrarManager } from '@lion/field/src/registration/formRegistrarManager.js';
 import { OverlayMixin, withDropdownConfig } from '@lion/overlays';
 import { ValidateMixin } from '@lion/validate';
 import '../lion-select-invoker.js';
@@ -113,38 +113,38 @@ export class LionSelectRich extends ChoiceGroupMixin(
     return this._listboxNode.querySelector(`#${this._listboxActiveDescendant}`);
   }
 
-  get modelValue() {
-    const el = this.formElements.find(option => option.checked);
-    return el ? el.modelValue.value : '';
-  }
+  // get modelValue() {
+  //   const el = this.formElements.find(option => option.checked);
+  //   return el ? el.choiceValue : '';
+  // }
 
-  set modelValue(value) {
-    const el = this.formElements.find(option => option.modelValue.value === value);
+  // set modelValue(value) {
+  //   this._handleMv(value);
+  // }
 
-    if (el) {
-      el.checked = true;
-    } else {
-      // cache user set modelValue, and then try it again when registration is done
-      this.__cachedUserSetModelValue = value;
-    }
+  // async _handleMv(value) {
+  //   if (!this.__readyForRegistration) {
+  //     await this.registrationReady;
+  //   }
+  //   const el = this.formElements.find(option => option.choiceValue === value);
 
-    this.__syncInvokerElement();
-    this.requestUpdate('modelValue');
-  }
+  //   console.log('el', el, value, this.formElements);
+  //   if (el) {
+  //     el.checked = true;
+  //   }
 
-  // TODO: quick and dirty fix. Should be possible to do it nicer on a higher layer
-  get serializedValue() {
-    return this.modelValue;
-  }
+  //   // this.__syncInvokerElement();
+  //   this.requestUpdate('modelValue');
+  // }
+
+  // // TODO: quick and dirty fix. Should be possible to do it nicer on a higher layer
+  // get serializedValue() {
+  //   return this.modelValue;
+  // }
 
   get checkedIndex() {
-    let checkedIndex = -1;
-    this.formElements.forEach((option, i) => {
-      if (option.checked) {
-        checkedIndex = i;
-      }
-    });
-    return checkedIndex;
+    const options = this.formElements;
+    return options.indexOf(options.find(o => o.checked));
   }
 
   set checkedIndex(index) {
@@ -183,10 +183,14 @@ export class LionSelectRich extends ChoiceGroupMixin(
     this.__setupEventListeners();
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     this._listboxNode.registrationTarget = this;
     if (super.connectedCallback) {
       super.connectedCallback();
+    }
+    if (!this.__readyForRegistration) {
+      await this.registrationReady;
+      this.initInteractionState();
     }
   }
 
@@ -206,12 +210,13 @@ export class LionSelectRich extends ChoiceGroupMixin(
     this.__setupInvokerNode();
     this.__setupListboxNode();
 
-    formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
-      // Now that we have rendered + registered our listbox, try setting the user defined modelValue again
-      if (this.__cachedUserSetModelValue) {
-        this.modelValue = this.__cachedUserSetModelValue;
-      }
-    });
+    // formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
+    //   // Now that we have rendered + registered our listbox, try setting the user defined modelValue again
+    //   if (this.__cachedUserSetModelValue) {
+    //     console.log('__cachedUserSetModelValue', this.__cachedUserSetModelValue);
+    //     this.modelValue = this.__cachedUserSetModelValue;
+    //   }
+    // });
 
     this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
     this.__toggleInvokerDisabled();
@@ -224,11 +229,17 @@ export class LionSelectRich extends ChoiceGroupMixin(
         this.interactionMode = detectInteractionMode();
       }
     }
-
     if (name === 'disabled' || name === 'readOnly') {
       this.__toggleInvokerDisabled();
     }
+    if (name === 'modelValue') {
+      this.__syncInvokerElement();
+      this.dispatchEvent(new Event('model-value-changed', { bubbles: true }));
+    }
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  _checkSingleChoiceElements() {}
 
   get _inputNode() {
     // In FormControl, we get direct child [slot="input"]. This doesn't work, because the overlay
@@ -336,13 +347,15 @@ export class LionSelectRich extends ChoiceGroupMixin(
     this.__onKeyUp = this.__onKeyUp.bind(this);
 
     this._listboxNode.addEventListener('active-changed', this.__onChildActiveChanged);
-    this._listboxNode.addEventListener('model-value-changed', this.__onChildModelValueChanged);
+    // this._listboxNode.addEventListener('model-value-changed', this.__onChildModelValueChanged);
+    this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
     this.addEventListener('keyup', this.__onKeyUp);
   }
 
   __teardownEventListeners() {
     this._listboxNode.removeEventListener('active-changed', this.__onChildActiveChanged);
-    this._listboxNode.removeEventListener('model-value-changed', this.__onChildModelValueChanged);
+    // this._listboxNode.removeEventListener('model-value-changed', this.__onChildModelValueChanged);
+    this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
     this._listboxNode.removeEventListener('keyup', this.__onKeyUp);
   }
 
@@ -371,7 +384,12 @@ export class LionSelectRich extends ChoiceGroupMixin(
     });
   }
 
-  __onChildModelValueChanged({ target }) {
+  __onChildModelValueChanged(cfgOrEvent) {
+    const { target } = cfgOrEvent;
+    if (cfgOrEvent.stopPropagation) {
+      cfgOrEvent.stopPropagation();
+    }
+
     if (target.checked) {
       this.formElements.forEach(formElement => {
         if (formElement !== target) {
@@ -379,7 +397,7 @@ export class LionSelectRich extends ChoiceGroupMixin(
           formElement.checked = false;
         }
       });
-      this.modelValue = target.value;
+      this.modelValue = target.choiceValue;
     }
   }
 

@@ -71,7 +71,7 @@ describe('<lion-input-date>', () => {
         .modelValue=${new Date('2017/06/15')}
       ></lion-input-date>
     `);
-    expect(el.formattedValue).to.equal('15/06/2017');
+    expect(el.viewValue).to.equal('15/06/2017');
 
     const el2 = await fixture(html`
       <lion-input-date
@@ -79,7 +79,7 @@ describe('<lion-input-date>', () => {
         .modelValue=${new Date('2017/06/15')}
       ></lion-input-date>
     `);
-    expect(el2.formattedValue).to.equal('06/15/2017');
+    expect(el2.viewValue).to.equal('06/15/2017');
   });
 
   it('uses global locale when formatOptions.locale is not defined', async () => {
@@ -87,13 +87,13 @@ describe('<lion-input-date>', () => {
     const el = await fixture(html`
       <lion-input-date .modelValue=${new Date('2017/06/15')}></lion-input-date>
     `);
-    expect(el.formattedValue).to.equal('15/06/2017');
+    expect(el.viewValue).to.equal('15/06/2017');
 
     localize.locale = 'en-US';
     const el2 = await fixture(html`
       <lion-input-date .modelValue=${new Date('2017/06/15')}></lion-input-date>
     `);
-    expect(el2.formattedValue).to.equal('06/15/2017');
+    expect(el2.viewValue).to.equal('06/15/2017');
   });
 
   it('ignores global locale change if formatOptions.locale is provided', async () => {
@@ -103,10 +103,10 @@ describe('<lion-input-date>', () => {
         .formatOptions="${{ locale: 'en-GB' }}"
       ></lion-input-date>
     `);
-    expect(el.formattedValue).to.equal('15/06/2017'); // british
+    expect(el.viewValue).to.equal('15/06/2017'); // british
     localize.locale = 'en-US';
     await el.updateComplete;
-    expect(el.formattedValue).to.equal('15/06/2017'); // should stay british
+    expect(el.viewValue).to.equal('15/06/2017'); // should stay british
   });
 
   it('is accessible', async () => {

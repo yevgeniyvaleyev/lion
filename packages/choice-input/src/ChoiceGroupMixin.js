@@ -9,7 +9,7 @@ export const ChoiceGroupMixin = dedupeMixin(
         return {
           /**
            * @desc When false (default), modelValue and serializedValue will reflect the
-           * currently selected choice (usually a string). When true, modelValue will and
+           * currently selected choice (a string). When true, modelValue and
            * serializedValue will be an array of strings.
            * @type {boolean}
            */
@@ -23,13 +23,14 @@ export const ChoiceGroupMixin = dedupeMixin(
       get modelValue() {
         const elems = this._getCheckedElements();
         if (this.multipleChoice) {
-          return elems.map(el => el.modelValue.value);
+          return elems.map(el => el.choiceValue);
         }
-        return elems[0] ? elems[0].modelValue.value : '';
+        return elems[0] ? elems[0].choiceValue : '';
       }
 
       set modelValue(value) {
-        this._setCheckedElements(value, (el, val) => el.modelValue.value === val);
+        this._setCheckedElements(value, (el, val) => el.choiceValue === val);
+        this.requestUpdate('modelValue');
       }
 
       get serializedValue() {
@@ -43,13 +44,13 @@ export const ChoiceGroupMixin = dedupeMixin(
         // are the same.
         const elems = this._getCheckedElements();
         if (this.multipleChoice) {
-          return elems.map(el => el.serializedValue.value);
+          return elems.map(el => el.choiceValue);
         }
-        return elems[0] ? elems[0].serializedValue.value : '';
+        return elems[0] ? elems[0].choiceValue : '';
       }
 
       set serializedValue(value) {
-        this._setCheckedElements(value, (el, val) => el.serializedValue === val);
+        this._setCheckedElements(value, (el, val) => el.choiceValue === val);
       }
 
       constructor() {
@@ -75,7 +76,7 @@ export const ChoiceGroupMixin = dedupeMixin(
        * @override from FormRegistrarMixin
        */
       addFormElement(child, indexToInsertAt) {
-        this._throwWhenInvalidChildModelValue(child);
+        // this._throwWhenInvalidChildModelValue(child);
         this.__delegateNameAttribute(child);
         super.addFormElement(child, indexToInsertAt);
       }
@@ -92,20 +93,20 @@ export const ChoiceGroupMixin = dedupeMixin(
         return this.formElements.filter(filterCondition).map(el => el.property);
       }
 
-      _throwWhenInvalidChildModelValue(child) {
-        if (
-          typeof child.modelValue.checked !== 'boolean' ||
-          !Object.prototype.hasOwnProperty.call(child.modelValue, 'value')
-        ) {
-          throw new Error(
-            `The ${this.tagName.toLowerCase()} name="${
-              this.name
-            }" does not allow to register ${child.tagName.toLowerCase()} with .modelValue="${
-              child.modelValue
-            }" - The modelValue should represent an Object { value: "foo", checked: false }`,
-          );
-        }
-      }
+      // _throwWhenInvalidChildModelValue(child) {
+      //   if (
+      //     typeof child.modelValue.checked !== 'boolean' ||
+      //     !Object.prototype.hasOwnProperty.call(child.modelValue, 'value')
+      //   ) {
+      //     throw new Error(
+      //       `The ${this.tagName.toLowerCase()} name="${
+      //         this.name
+      //       }" does not allow to register ${child.tagName.toLowerCase()} with .modelValue="${
+      //         child.modelValue
+      //       }" - The modelValue should represent an Object { value: "foo", checked: false }`,
+      //     );
+      //   }
+      // }
 
       _isEmpty() {
         const value = this.modelValue;

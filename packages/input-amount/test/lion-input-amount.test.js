@@ -25,7 +25,7 @@ describe('<lion-input-amount>', () => {
         <lion-input-amount currency="JOD" .modelValue="${123}"></lion-input-amount>
       `,
     );
-    expect(el.formattedValue).to.equal('123,000');
+    expect(el.viewValue).to.equal('123,000');
   });
 
   it('formatAmount uses locale provided in formatOptions', async () => {
@@ -37,7 +37,7 @@ describe('<lion-input-amount>', () => {
         ></lion-input-amount>
       `,
     );
-    expect(el.formattedValue).to.equal('123.00');
+    expect(el.viewValue).to.equal('123.00');
     el = await fixture(
       html`
         <lion-input-amount
@@ -46,17 +46,17 @@ describe('<lion-input-amount>', () => {
         ></lion-input-amount>
       `,
     );
-    expect(el.formattedValue).to.equal('123,00');
+    expect(el.viewValue).to.equal('123,00');
   });
 
   it('ignores global locale change if property is provided', async () => {
     const el = await fixture(html`
       <lion-input-amount .modelValue=${123456.78} .locale="${'en-GB'}"></lion-input-amount>
     `);
-    expect(el.formattedValue).to.equal('123,456.78'); // British
+    expect(el.viewValue).to.equal('123,456.78'); // British
     localize.locale = 'nl-NL';
     await aTimeout();
-    expect(el.formattedValue).to.equal('123,456.78'); // should stay British
+    expect(el.viewValue).to.equal('123,456.78'); // should stay British
   });
 
   it('uses parseAmount for parsing', async () => {

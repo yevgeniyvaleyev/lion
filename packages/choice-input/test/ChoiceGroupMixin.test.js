@@ -40,7 +40,7 @@ describe('ChoiceGroupMixin', () => {
     expect(el.modelValue).to.equal('other');
   });
 
-  it('throws if a child element without a modelValue like { value: "foo", checked: false } tries to register', async () => {
+  it.skip('throws if a child element without a modelValue like { value: "foo", checked: false } tries to register', async () => {
     const el = await fixture(html`
       <choice-group name="gender">
         <choice-group-input .choiceValue=${'male'}></choice-group-input>
