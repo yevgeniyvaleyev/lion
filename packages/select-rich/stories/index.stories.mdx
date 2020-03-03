@@ -3,6 +3,7 @@ import { loadDefaultFeedbackMessages, Required } from '@lion/validate';
 import '@lion/option/lion-option.js';
 import '../lion-options.js';
 import '../lion-select-rich.js';
+import '../lion-listbox.js';
 
 <Meta title="Forms/Select Rich" parameters={{ component: 'lion-select-rich' }} />
 
@@ -516,3 +517,25 @@ class MyInvokerButton extends LitElement() {
 
 > This example only works if your option elements don't have ShadowDOM boundaries themselves.
 > Cloning deeply only works up until the first shadow boundary.
+
+
+
+
+
+
+
+
+
+
+
+<Story name="Listbox">
+  {html`
+    <lion-listbox name="bistLox" label="Favorite color">
+      <lion-options slot="input">
+        <lion-option .choiceValue=${'red'}>Red</lion-option>
+        <lion-option .choiceValue=${'hotpink'} checked>Hotpink</lion-option>
+        <lion-option .choiceValue=${'teal'}>Teal</lion-option>
+      </lion-options>
+    </lion-listbox>
+  `}
+</Story>

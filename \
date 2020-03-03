@@ -1,0 +1,34 @@
+feat(icon): add icon lazy loading system
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Author:    Lars den Bakker <larsdenbakker@gmail.com>
+# Date:      Sat May 25 16:42:39 2019 +0200
+#
+# interactive rebase in progress; onto da2729e3
+# Last command done (1 command done):
+#    edit 77135c8e feat(icon): add icon lazy loading system
+# No commands remaining.
+# You are currently editing a commit while rebasing branch 'feat/icon-manager' on 'da2729e3'.
+#
+# Changes to be committed:
+#	modified:   packages/icon/index.js
+#	modified:   packages/icon/package.json
+#	new file:   packages/icon/src/IconManager.js
+#	modified:   packages/icon/src/LionIcon.js
+#	new file:   packages/icon/src/icons.js
+#	deleted:    packages/icon/stories/dynamic-icon.stories.js
+#	new file:   packages/icon/stories/icon-resolvers.js
+#	new file:   packages/icon/stories/icon.stories.mdx
+#	renamed:    packages/icon/stories/icons/bugs-collection.js -> packages/icon/stories/icons/iconset-bugs.js
+#	new file:   packages/icon/stories/icons/iconset-misc.js
+#	new file:   packages/icon/stories/icons/iconset-space.js
+#	renamed:    packages/icon/stories/icons/arrowLeft.svg.js -> packages/icon/stories/icons/misc/arrowLeft.svg.js
+#	deleted:    packages/icon/stories/index.stories.mdx
+#	new file:   packages/icon/stories/system.stories.mdx
+#	new file:   packages/icon/test/IconManager.test.js
+#	modified:   packages/icon/test/lion-icon.test.js
+#	deleted:    packages/icon/test/myIcon.bundle.js
+#	modified:   packages/intros/stories/icon-intro.stories.mdx
+#
