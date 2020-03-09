@@ -1,0 +1,116 @@
+import { Story, Meta, html, Preview } from '@open-wc/demoing-storybook';
+import { loadDefaultFeedbackMessages, Required } from '@lion/validate';
+import { listboxData } from './listboxData.js';
+import '@lion/option/lion-option.js';
+import '../lion-combobox.js';
+
+import './overflow-previews.js';
+
+<Meta title="Forms/Combobox" parameters={{ component: 'lion-combobox' }} />
+
+# Combobox
+
+A combobox is a widget made up of the combination of two distinct elements:
+
+- a single-line textbox
+- an associated pop-up element for helping users set the value of the textbox
+
+The popup may be a listbox, grid, tree, or dialog. Many implementations also include a third optional element -- a graphical button adjacent to the textbox, indicating the availability of the popup. Activating the button displays the popup if suggestions are available.
+
+> From https://www.w3.org/TR/wai-aria-practices/#combobox
+
+<Preview>
+  <Story name="Combobox">
+    {html`
+      <lion-combobox name="combo" label="Default">
+        ${listboxData.map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-combobox>
+    `}
+  </Story>
+</Preview>
+
+## Multiple choice
+
+Add `multiple-choice` flag to allow multiple values to be selected.
+This will:
+
+- keep the listbox overlay open on click of an option
+- display a list of selected option representations next to the text box
+- make the value of type `Array` instead of `String`
+
+<Preview>
+  <Story name="Multiple choice">
+    {html`
+      <lion-combobox name="combo" label="Multiple" multiple-choice>
+        ${listboxData.map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-combobox>
+    `}
+  </Story>
+</Preview>
+
+## Autocomplete
+
+Use `autocomplete="list"` to automatically suggest the closest matching option in the text box.
+By default `autocomplete="both"` is applied, which also activates the closest matching option as
+active descendant.
+
+<Preview>
+  <Story name="Autocomplete list">
+    {html`
+      <lion-combobox name="combo" label="Autocomplete 'list'" autocomplete="list">
+        ${listboxData.map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-combobox>
+    `}
+  </Story>
+</Preview>
+
+When `autocomplete="none"` is configured, the suggested options in the overlay are not filtered
+based on the characters typed in the textbox.
+
+<Preview>
+  <Story name="Autocomplete none">
+    {html`
+      <lion-combobox name="combo" label="Autocomplete 'none'" autocomplete="none">
+        ${listboxData.map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-combobox>
+    `}
+  </Story>
+</Preview>
+
+## Match Mode
+
+When `match-mode="begin"` is applied, the entered text in the textbox only filters
+options whose values begin with the entered text. For instance, the entered text 'ch' will match
+with value 'Chard', but not with 'Artichoke'.
+By default `match-mode="all"` is applied. This will also match parts of a word.
+So 'ch' will both match 'Chard' and 'Artichoke'.
+
+<Preview>
+  <Story name="Match Mode">
+    {html`
+      <lion-combobox name="combo" label="Match Mode 'begin'" match-mode="begin">
+        ${listboxData.map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-combobox>
+    `}
+  </Story>
+</Preview>

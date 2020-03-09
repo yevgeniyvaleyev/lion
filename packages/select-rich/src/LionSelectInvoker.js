@@ -34,6 +34,8 @@ export class LionSelectInvoker extends LionButton {
       after: () => {
         const icon = document.createElement('span');
         icon.textContent = '▼';
+        icon.setAttribute('role', 'img');
+        icon.setAttribute('aria-hidden', true);
         return icon;
       },
     };

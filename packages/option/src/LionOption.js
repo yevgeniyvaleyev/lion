@@ -30,10 +30,14 @@ export class LionOption extends DisabledMixin(ChoiceInputMixin(FormRegisteringMi
           display: block;
           background-color: white;
           padding: 4px;
+          cursor: default;
         }
 
-        :host([active]),
         :host(:hover) {
+          background-color: #eee;
+        }
+
+        :host([active]) {
           background-color: #ddd;
         }
 
@@ -88,9 +92,13 @@ export class LionOption extends DisabledMixin(ChoiceInputMixin(FormRegisteringMi
 
   __registerEventListeners() {
     this.__onClick = () => {
-      if (!this.disabled) {
+      if (this.disabled) {
+        return;
+      }
+      if (this.__parentFormGroup && this.__parentFormGroup.multipleChoice) {
+        this.checked = !this.checked;
+      } else {
         this.checked = true;
-        this.dispatchEvent(new Event('checked', { bubbles: true, composed: true }));
       }
     };
     this.addEventListener('click', this.__onClick);

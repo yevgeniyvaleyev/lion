@@ -4,39 +4,6 @@ import '../lion-select-invoker.js';
 import './differentKeyNamesShimIE.js';
 import { ListboxMixin } from './ListboxMixin.js';
 
-// function uuid() {
-//   return Math.random()
-//     .toString(36)
-//     .substr(2, 10);
-// }
-
-// function detectInteractionMode() {
-//   if (navigator.appVersion.indexOf('Mac') !== -1) {
-//     return 'mac';
-//   }
-//   return 'windows/linux';
-// }
-
-// function isInView(container, element, partial = false) {
-//   const cTop = container.scrollTop;
-//   const cBottom = cTop + container.clientHeight;
-//   const eTop = element.offsetTop;
-//   const eBottom = eTop + element.clientHeight;
-//   const isTotal = eTop >= cTop && eBottom <= cBottom;
-//   let isPartial;
-
-//   if (partial === true) {
-//     isPartial = (eTop < cTop && eBottom > cTop) || (eBottom > cBottom && eTop < cBottom);
-//   } else if (typeof partial === 'number') {
-//     if (eTop < cTop && eBottom > cTop) {
-//       isPartial = ((eBottom - cTop) * 100) / element.clientHeight > partial;
-//     } else if (eBottom > cBottom && eTop < cBottom) {
-//       isPartial = ((cBottom - eTop) * 100) / element.clientHeight > partial;
-//     }
-//   }
-//   return isTotal || isPartial;
-// }
-
 /**
  * LionSelectRich: wraps the <lion-listbox> element
  *
@@ -44,44 +11,6 @@ import { ListboxMixin } from './ListboxMixin.js';
  * @extends {LitElement}
  */
 export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitElement))) {
-  // static get properties() {
-  //   return {
-  //     disabled: {
-  //       type: Boolean,
-  //       reflect: true,
-  //     },
-
-  //     readOnly: {
-  //       type: Boolean,
-  //       reflect: true,
-  //       attribute: 'readonly',
-  //     },
-
-  //     interactionMode: {
-  //       type: String,
-  //       attribute: 'interaction-mode',
-  //     },
-
-  //     name: {
-  //       type: String,
-  //     },
-  //   };
-  // }
-
-  // static get styles() {
-  //   return [
-  //     css`
-  //       :host {
-  //         display: block;
-  //       }
-
-  //       :host([disabled]) {
-  //         color: #adadad;
-  //       }
-  //     `,
-  //   ];
-  // }
-
   get slots() {
     return {
       ...super.slots,
@@ -104,25 +33,9 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     return this._overlayContentNode._scrollTargetNode || this._overlayContentNode;
   }
 
-  // get _listboxActiveDescendantNode() {
-  //   return this._listboxNode.querySelector(`#${this._listboxActiveDescendant}`);
-  // }
-
-  // get _scrollTargetNode() {
-  //   return this._overlayContentNode._scrollTargetNode || this._overlayContentNode;
-  // }
-
   constructor() {
     super();
     this.__onKeyUp = this.__onKeyUp.bind(this);
-  }
-
-  async connectedCallback() {
-    // TODO: add portal registrarMixin
-    this._listboxNode.registrationTarget = this;
-    if (super.connectedCallback) {
-      super.connectedCallback();
-    }
   }
 
   disconnectedCallback() {
@@ -139,7 +52,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     super.firstUpdated(c);
     this.__setupOverlay();
     this.__setupInvokerNode();
-    // this.__setupListboxNode();
     this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
     this.__toggleInvokerDisabled();
   }
@@ -153,9 +65,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
       this.__syncInvokerElement();
     }
   }
-
-  // // eslint-disable-next-line class-methods-use-this
-  // _checkSingleChoiceElements() {}
 
   get _inputNode() {
     // In FormControl, we get direct child [slot="input"]. This doesn't work, because the overlay
@@ -178,10 +87,8 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     if (changedProps.has('disabled')) {
       if (this.disabled) {
         this._invokerNode.makeRequestToBeDisabled();
-        // this.__requestOptionsToBeDisabled();
       } else {
         this._invokerNode.retractRequestToBeDisabled();
-        // this.__retractRequestOptionsToBeDisabled();
       }
     }
 
@@ -221,6 +128,7 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
       <div class="input-group__input">
         <slot name="invoker"></slot>
         <slot name="input"></slot>
+        <slot id="options-outlet"></slot>
       </div>
     `;
   }
@@ -258,23 +166,15 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
   //   /* eslint-enable no-param-reassign */
   // }
 
-  // __setupEventListeners() {
-  //   this.__onChildActiveChanged = this.__onChildActiveChanged.bind(this);
-  //   this.__onChildModelValueChanged = this.__onChildModelValueChanged.bind(this);
-  //   this.__onKeyUp = this.__onKeyUp.bind(this);
+  __setupEventListeners() {
+    super.__setupEventListeners();
+    this.addEventListener('keyup', this.__onKeyUp);
+  }
 
-  //   this._listboxNode.addEventListener('active-changed', this.__onChildActiveChanged);
-  //   // this._listboxNode.addEventListener('model-value-changed', this.__onChildModelValueChanged);
-  //   this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
-  //   this.addEventListener('keyup', this.__onKeyUp);
-  // }
-
-  // __teardownEventListeners() {
-  //   this._listboxNode.removeEventListener('active-changed', this.__onChildActiveChanged);
-  //   // this._listboxNode.removeEventListener('model-value-changed', this.__onChildModelValueChanged);
-  //   this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
-  //   this._listboxNode.removeEventListener('keyup', this.__onKeyUp);
-  // }
+  __teardownEventListeners() {
+    super.__teardownEventListeners();
+    this.removeEventListener('keyup', this.__onKeyUp);
+  }
 
   __toggleInvokerDisabled() {
     if (this._invokerNode) {
@@ -283,41 +183,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     }
   }
 
-  // __onChildActiveChanged({ target }) {
-  //   if (target.active === true) {
-  //     this.formElements.forEach(formElement => {
-  //       if (formElement !== target) {
-  //         // eslint-disable-next-line no-param-reassign
-  //         formElement.active = false;
-  //       }
-  //     });
-  //     this._listboxNode.setAttribute('aria-activedescendant', target.id);
-  //   }
-  // }
-
-  // __setAttributeForAllFormElements(attribute, value) {
-  //   this.formElements.forEach(formElement => {
-  //     formElement.setAttribute(attribute, value);
-  //   });
-  // }
-
-  // __onChildModelValueChanged(cfgOrEvent) {
-  //   const { target } = cfgOrEvent;
-  //   if (cfgOrEvent.stopPropagation) {
-  //     cfgOrEvent.stopPropagation();
-  //   }
-
-  //   if (target.checked) {
-  //     this.formElements.forEach(formElement => {
-  //       if (formElement !== target) {
-  //         // eslint-disable-next-line no-param-reassign
-  //         formElement.checked = false;
-  //       }
-  //     });
-  //     this.modelValue = target.choiceValue;
-  //   }
-  // }
-
   __syncInvokerElement() {
     // sync to invoker
     if (this._invokerNode) {
@@ -325,107 +190,15 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     }
   }
 
-  // __getNextEnabledOption(currentIndex, offset = 1) {
-  //   for (let i = currentIndex + offset; i < this.formElements.length; i += 1) {
-  //     if (this.formElements[i] && !this.formElements[i].disabled) {
-  //       return i;
-  //     }
-  //   }
-  //   return currentIndex;
-  // }
-
-  // __getPreviousEnabledOption(currentIndex, offset = -1) {
-  //   for (let i = currentIndex + offset; i >= 0; i -= 1) {
-  //     if (this.formElements[i] && !this.formElements[i].disabled) {
-  //       return i;
-  //     }
-  //   }
-  //   return currentIndex;
-  // }
-
-  // /**
-  //  * @desc
-  //  * Handle various keyboard controls; UP/DOWN will shift focus; SPACE selects
-  //  * an item.
-  //  *
-  //  * @param ev - the keydown event object
-  //  */
-  // __listboxOnKeyUp(ev) {
-  //   if (this.disabled) {
-  //     return;
-  //   }
-
-  //   const { key } = ev;
-
-  //   switch (key) {
-  //     case 'Escape':
-  //       ev.preventDefault();
-  //       this.opened = false;
-  //       break;
-  //     case 'Enter':
-  //     case ' ':
-  //       ev.preventDefault();
-  //       if (this.interactionMode === 'mac') {
-  //         this.checkedIndex = this.activeIndex;
-  //       }
-  //       this.opened = false;
-  //       break;
-  //     case 'ArrowUp':
-  //       ev.preventDefault();
-  //       this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
-  //       break;
-  //     case 'ArrowDown':
-  //       ev.preventDefault();
-  //       this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
-  //       break;
-  //     case 'Home':
-  //       ev.preventDefault();
-  //       this.activeIndex = this.__getNextEnabledOption(0, 0);
-  //       break;
-  //     case 'End':
-  //       ev.preventDefault();
-  //       this.activeIndex = this.__getPreviousEnabledOption(this.formElements.length - 1, 0);
-  //       break;
-  //     /* no default */
-  //   }
-
-  //   const keys = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
-  //   if (keys.includes(key) && this.interactionMode === 'windows/linux') {
-  //     this.checkedIndex = this.activeIndex;
-  //   }
-  // }
-
-  // __listboxOnKeyDown(ev) {
-  //   if (this.disabled) {
-  //     return;
-  //   }
-
-  //   const { key } = ev;
-
-  //   switch (key) {
-  //     case 'Tab':
-  //       // Tab can only be caught in keydown
-  //       ev.preventDefault();
-  //       this.opened = false;
-  //       break;
-  //     /* no default */
-  //   }
-  // }
-
   __onKeyUp(ev) {
-    if (this.disabled) {
-      return;
-    }
-
-    if (this.opened) {
+    if (this.disabled || this.opened) {
       return;
     }
 
     const { key } = ev;
     switch (key) {
       case 'ArrowUp':
-        ev.preventDefault();
-
+        // ev.preventDefault();
         if (this.interactionMode === 'mac') {
           this.opened = true;
         } else {
@@ -433,7 +206,7 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
         }
         break;
       case 'ArrowDown':
-        ev.preventDefault();
+        // ev.preventDefault();
         if (this.interactionMode === 'mac') {
           this.opened = true;
         } else {
@@ -443,22 +216,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
       /* no default */
     }
   }
-
-  // __requestOptionsToBeDisabled() {
-  //   this.formElements.forEach(el => {
-  //     if (el.makeRequestToBeDisabled) {
-  //       el.makeRequestToBeDisabled();
-  //     }
-  //   });
-  // }
-
-  // __retractRequestOptionsToBeDisabled() {
-  //   this.formElements.forEach(el => {
-  //     if (el.retractRequestToBeDisabled) {
-  //       el.retractRequestToBeDisabled();
-  //     }
-  //   });
-  // }
 
   __setupInvokerNode() {
     this._invokerNode.id = `invoker-${this._inputId}`;
@@ -555,23 +312,8 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
   __teardownOverlay() {
     this._overlayCtrl.removeEventListener('show', this.__overlayOnShow);
     this._overlayCtrl.removeEventListener('hide', this.__overlayOnHide);
-    this._scrollTargetNode.removeEventListener('keydown', this.__overlayOnHide);
+    this._scrollTargetNode.removeEventListener('keydown', this.__preventScrollingWithArrowKeys);
   }
-
-  // __preventScrollingWithArrowKeys(ev) {
-  //   if (this.disabled) {
-  //     return;
-  //   }
-  //   const { key } = ev;
-  //   switch (key) {
-  //     case 'ArrowUp':
-  //     case 'ArrowDown':
-  //     case 'Home':
-  //     case 'End':
-  //       ev.preventDefault();
-  //     /* no default */
-  //   }
-  // }
 
   /**
    * @override Configures OverlayMixin
@@ -597,4 +339,21 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
   //     (this.querySelector('[slot=label]') && this.querySelector('[slot=label]').textContent);
   //   return this.__fieldName || label || this.name;
   // }
+
+  /**
+   * @extend ListboxMixin > FormRegistrarMixin
+   * @param {*} child
+   * @param {Number} indexToInsertAt
+   */
+  addFormElement(child, indexToInsertAt) {
+    super.addFormElement(child, indexToInsertAt);
+    /* eslint-disable no-param-reassign */
+
+    // the first elements checked by default
+    if (!this.__hasInitialSelectedFormElement && (!child.disabled || this.disabled)) {
+      child.active = true;
+      child.checked = true;
+      this.__hasInitialSelectedFormElement = true;
+    }
+  }
 }

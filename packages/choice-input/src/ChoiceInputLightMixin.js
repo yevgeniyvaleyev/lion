@@ -42,24 +42,39 @@ export const ChoiceInputLightMixin = superclass =>
           type: Object,
           attribute: 'choice-value',
         },
+        value: String,
       };
     }
 
+    /**
+     * @deprecated
+     */
     get choiceValue() {
+      return this.value;
+    }
+
+    /**
+     * @deprecated
+     */
+    set choiceValue(v) {
+      this.value = v;
+    }
+
+    get value() {
       return this.modelValue ? this.modelValue.value : this.__choiceValue;
     }
 
-    set choiceValue(v) {
+    set value(v) {
       if (this.modelValue) {
         this.modelValue.value = v;
       }
       this.__choiceValue = v;
     }
 
-    updateSync(name, oldValue) {
-      super.updateSync(name, oldValue);
+    updated(changedProperties) {
+      super.updated(changedProperties);
 
-      if (name === 'checked') {
+      if (changedProperties.has('checked')) {
         this.__syncCheckedToInputElement();
         this.dispatchEvent(new Event('checked', { bubbles: true, composed: true }));
       }

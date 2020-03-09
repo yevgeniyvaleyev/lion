@@ -1,8 +1,9 @@
 import { ChoiceGroupMixin } from '@lion/choice-input';
-import { css, dedupeMixin } from '@lion/core';
+import { css, html, dedupeMixin } from '@lion/core';
 import { FormControlMixin, FormRegistrarMixin, InteractionStateMixin } from '@lion/field';
 import { ValidateMixin } from '@lion/validate';
 import './differentKeyNamesShimIE.js';
+import '../lion-options.js';
 
 function uuid() {
   return Math.random()
@@ -63,6 +64,27 @@ export const ListboxMixin = dedupeMixin(
 
           checkedIndex: Boolean,
           activeIndex: Boolean,
+
+          /**
+           * @desc Informs screenreader and affects keyboard navigation.
+           * By default 'vertical'
+           * @type {'vertical'|'horizontal'}
+           */
+          orientation: {
+            type: String,
+          },
+        };
+      }
+
+      // eslint-disable-next-line class-methods-use-this
+      get slots() {
+        return {
+          ...super.slots,
+          input: () => {
+            const listboxNode = document.createElement('lion-options');
+            listboxNode.registrationTarget = this;
+            return listboxNode;
+          },
         };
       }
 
@@ -98,12 +120,20 @@ export const ListboxMixin = dedupeMixin(
 
       get checkedIndex() {
         const options = this.formElements;
-        return options.indexOf(options.find(o => o.checked));
+        if (!this.multipleChoice) {
+          return options.indexOf(options.find(o => o.checked));
+        }
+        return options.filter(o => o.checked).map(o => options.indexOf(o));
       }
 
+      // TODO: make this a method...
       set checkedIndex(index) {
         if (this._listboxNode.children[index]) {
-          this._listboxNode.children[index].checked = true;
+          if (!this.multipleChoice) {
+            this._listboxNode.children[index].checked = true;
+          } else {
+            this._listboxNode.children[index].checked = !this._listboxNode.children[index].checked;
+          }
         }
       }
 
@@ -126,18 +156,25 @@ export const ListboxMixin = dedupeMixin(
         super();
         this.interactionMode = 'auto';
         this.disabled = false;
+        this.orientation = 'vertical';
+
         // for interaction states
         this._listboxActiveDescendant = null;
         this.__hasInitialSelectedFormElement = false;
 
-        this.__setupEventListeners();
+        this.__listboxOnClick = this.__listboxOnClick.bind(this);
+        this.__listboxOnKeyUp = this.__listboxOnKeyUp.bind(this);
+        this.__listboxOnKeyDown = this.__listboxOnKeyDown.bind(this);
       }
 
       async connectedCallback() {
-        this._listboxNode.registrationTarget = this;
+        if (this._listboxNode) {
+          this._listboxNode.registrationTarget = this;
+        }
         if (super.connectedCallback) {
           super.connectedCallback();
         }
+        this.__setupEventListeners();
         if (!this.__readyForRegistration) {
           await this.registrationReady;
           this.initInteractionState();
@@ -184,27 +221,25 @@ export const ListboxMixin = dedupeMixin(
         super.updated(changedProps);
         if (changedProps.has('disabled')) {
           if (this.disabled) {
-            // this._invokerNode.makeRequestToBeDisabled();
             this.__requestOptionsToBeDisabled();
           } else {
-            // this._invokerNode.retractRequestToBeDisabled();
             this.__retractRequestOptionsToBeDisabled();
           }
         }
       }
 
-      // // TODO: add this to Listbox element
-      // /**
-      //  * @override
-      //  */
-      // // eslint-disable-next-line
-      // _inputGroupInputTemplate() {
-      //   return html`
-      //     <div class="input-group__input">
-      //       <slot name="input"></slot>
-      //     </div>
-      //   `;
-      // }
+      /**
+       * @override
+       */
+      // eslint-disable-next-line
+      _inputGroupInputTemplate() {
+        return html`
+          <div class="input-group__input">
+            <slot name="input"></slot>
+            <slot id="options-outlet"></slot>
+          </div>
+        `;
+      }
 
       /**
        * Overrides FormRegistrar adding to make sure children have specific default states when added
@@ -224,36 +259,29 @@ export const ListboxMixin = dedupeMixin(
           child.makeRequestToBeDisabled();
         }
 
-        // the first elements checked by default
-        if (!this.__hasInitialSelectedFormElement && (!child.disabled || this.disabled)) {
-          child.active = true;
-          child.checked = true;
-          this.__hasInitialSelectedFormElement = true;
-        }
-
         this.__setAttributeForAllFormElements('aria-setsize', this.formElements.length);
         child.setAttribute('aria-posinset', this.formElements.length);
 
-        this.__onChildModelValueChanged({ target: child });
+        this.__onChildCheckedChanged({ target: child });
         this.resetInteractionState();
         /* eslint-enable no-param-reassign */
       }
 
       __setupEventListeners() {
         this.__onChildActiveChanged = this.__onChildActiveChanged.bind(this);
-        this.__onChildModelValueChanged = this.__onChildModelValueChanged.bind(this);
+        this.__onChildCheckedChanged = this.__onChildCheckedChanged.bind(this);
 
         this._listboxNode.addEventListener('active-changed', this.__onChildActiveChanged);
-        // this._listboxNode.addEventListener('model-value-changed', this.__onChildModelValueChanged);
-        this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
-        this.addEventListener('keyup', this.__onKeyUp);
+        // this._listboxNode.addEventListener('model-value-changed', this.__onChildCheckedChanged);
+        this._listboxNode.addEventListener('checked', this.__onChildCheckedChanged);
+        this.addEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
 
       __teardownEventListeners() {
         this._listboxNode.removeEventListener('active-changed', this.__onChildActiveChanged);
-        // this._listboxNode.removeEventListener('model-value-changed', this.__onChildModelValueChanged);
-        this._listboxNode.addEventListener('checked', this.__onChildModelValueChanged);
-        this._listboxNode.removeEventListener('keyup', this.__onKeyUp);
+        // this._listboxNode.removeEventListener('model-value-changed', this.__onChildCheckedChanged);
+        this._listboxNode.removeEventListener('checked', this.__onChildCheckedChanged);
+        this.removeEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
 
       __onChildActiveChanged({ target }) {
@@ -274,21 +302,27 @@ export const ListboxMixin = dedupeMixin(
         });
       }
 
-      __onChildModelValueChanged(cfgOrEvent) {
+      __onChildCheckedChanged(cfgOrEvent) {
         const { target } = cfgOrEvent;
         if (cfgOrEvent.stopPropagation) {
           cfgOrEvent.stopPropagation();
         }
-
         if (target.checked) {
-          this.formElements.forEach(formElement => {
-            if (formElement !== target) {
-              // eslint-disable-next-line no-param-reassign
-              formElement.checked = false;
-            }
-          });
-          this.modelValue = target.choiceValue;
+          if (!this.multipleChoice) {
+            this.formElements.forEach(formElement => {
+              if (formElement !== target) {
+                // eslint-disable-next-line no-param-reassign
+                formElement.checked = false;
+              }
+            });
+          }
+          // if (!this.multipleChoice) {
+          //   this.modelValue = target.choiceValue;
+          // } else {
+          //   // this.modelValue
+          // }
         }
+        this.requestUpdate('modelValue');
       }
 
       __getNextEnabledOption(currentIndex, offset = 1) {
@@ -331,32 +365,51 @@ export const ListboxMixin = dedupeMixin(
           case 'Enter':
           case ' ':
             ev.preventDefault();
-            if (this.interactionMode === 'mac') {
+            if (this.interactionMode === 'mac' || this.multipleChoice) {
               this.checkedIndex = this.activeIndex;
             }
-            this.opened = false;
+            if (!this.multipleChoice) {
+              this.opened = false;
+            }
             break;
           case 'ArrowUp':
-            ev.preventDefault();
-            this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
+            if (this.orientation === 'vertical') {
+              this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
+            }
+            break;
+          case 'ArrowLeft':
+            // ev.preventDefault();
+            if (this.orientation === 'horizontal') {
+              this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
+            }
             break;
           case 'ArrowDown':
-            ev.preventDefault();
-            this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
+            if (this.orientation === 'vertical') {
+              this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
+            }
+            break;
+          case 'ArrowRight':
+            if (this.orientation === 'horizontal') {
+              this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
+            }
             break;
           case 'Home':
-            ev.preventDefault();
+            // ev.preventDefault();
             this.activeIndex = this.__getNextEnabledOption(0, 0);
             break;
           case 'End':
-            ev.preventDefault();
+            // ev.preventDefault();
             this.activeIndex = this.__getPreviousEnabledOption(this.formElements.length - 1, 0);
             break;
           /* no default */
         }
 
         const keys = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
-        if (keys.includes(key) && this.interactionMode === 'windows/linux') {
+        if (
+          keys.includes(key) &&
+          this.interactionMode === 'windows/linux' &&
+          !this.multipleChoice
+        ) {
           this.checkedIndex = this.activeIndex;
         }
       }
@@ -371,7 +424,7 @@ export const ListboxMixin = dedupeMixin(
         switch (key) {
           case 'Tab':
             // Tab can only be caught in keydown
-            ev.preventDefault();
+            // ev.preventDefault();
             this.opened = false;
             break;
           /* no default */
@@ -411,22 +464,30 @@ export const ListboxMixin = dedupeMixin(
             });
           }
         }
+
+        const slot = this.shadowRoot.getElementById('options-outlet');
+        if (slot) {
+          slot.addEventListener('slotchange', () => {
+            slot.assignedNodes().forEach(node => {
+              this._listboxNode.appendChild(node);
+            });
+          });
+        }
+      }
+
+      __listboxOnClick() {
+        if (!this.multipleChoice) {
+          this.opened = false;
+        }
       }
 
       __setupListboxInteractions() {
-        this.__listboxOnClick = () => {
-          this.opened = false;
-        };
-
         this._listboxNode.setAttribute('role', 'listbox');
+        this._listboxNode.setAttribute('aria-orientation', this.orientation);
+        this._listboxNode.setAttribute('aria-multiselectable', this.multipleChoice);
         this._listboxNode.setAttribute('tabindex', '0');
-
         this._listboxNode.addEventListener('click', this.__listboxOnClick);
-
-        this.__listboxOnKeyUp = this.__listboxOnKeyUp.bind(this);
         this._listboxNode.addEventListener('keyup', this.__listboxOnKeyUp);
-
-        this.__listboxOnKeyDown = this.__listboxOnKeyDown.bind(this);
         this._listboxNode.addEventListener('keydown', this.__listboxOnKeyDown);
       }
 
@@ -436,6 +497,18 @@ export const ListboxMixin = dedupeMixin(
           this._listboxNode.removeEventListener('keyup', this.__listboxOnKeyUp);
           this._listboxNode.removeEventListener('keydown', this.__listboxOnKeyDown);
         }
+      }
+
+      // TODO: find out why this cannot be inherited from FormControlMixin
+      set fieldName(value) {
+        this.__fieldName = value;
+      }
+
+      get fieldName() {
+        const label =
+          this.label ||
+          (this.querySelector('[slot=label]') && this.querySelector('[slot=label]').textContent);
+        return this.__fieldName || label || this.name;
       }
 
       __preventScrollingWithArrowKeys(ev) {
@@ -451,18 +524,6 @@ export const ListboxMixin = dedupeMixin(
             ev.preventDefault();
           /* no default */
         }
-      }
-
-      // TODO: find out why this cannot be inherited from FormControlMixin
-      set fieldName(value) {
-        this.__fieldName = value;
-      }
-
-      get fieldName() {
-        const label =
-          this.label ||
-          (this.querySelector('[slot=label]') && this.querySelector('[slot=label]').textContent);
-        return this.__fieldName || label || this.name;
       }
     },
 );

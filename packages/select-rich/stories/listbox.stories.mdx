@@ -1,0 +1,91 @@
+import { Story, Meta, html, Preview } from '@open-wc/demoing-storybook';
+import { loadDefaultFeedbackMessages, Required } from '@lion/validate';
+import { listboxData } from './listboxData.js';
+import '@lion/option/lion-option.js';
+import '../lion-listbox.js';
+
+<Meta title="Forms/Listbox" parameters={{ component: 'lion-listbox' }} />
+
+# Listbox
+
+A listbox widget presents a list of options and allows a user to select one or more of them. A listbox that allows a single option to be chosen is a single-select listbox; one that allows multiple options to be selected is a multi-select listbox.
+
+> From https://www.w3.org/TR/wai-aria-practices/#Listbox
+
+<Preview>
+  <Story name="Listbox">
+    {html`
+      <lion-listbox name="listbox" label="Default">
+        ${listboxData.slice(0, 5).map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>
+
+## Multiple choice
+
+Add `multiple-choice` flag to allow multiple values to be selected.
+This will:
+
+- keep the listbox overlay open on click of an option
+- display a list of selected option representations next to the text box
+- make the value of type `Array` instead of `String`
+
+<Preview>
+  <Story name="Multiple choice">
+    {html`
+      <lion-listbox name="combo" label="Multiple" multiple-choice>
+        ${listboxData.slice(0, 10).map(
+          entry => html`
+            <lion-option value="${entry}">${entry}</lion-option>
+          `,
+        )}
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>
+
+## Orientation
+
+When `orientation="horizontal"`, left and right arrow keys will be enabled, plus the screenreader
+will be informed about the direction of the options.
+By default, `orientation="horizontal"` is set, which enables up and down arrow keys.
+
+<Preview>
+  <Story name="Orientation">
+    {html`
+      <lion-listbox name="combo" label="Orientation horizontal" orientation="horizontal">
+        ${listboxData.slice(0, 10).map(
+          entry => html`
+            <lion-option value="${entry}" style="display:inline-block;">${entry}</lion-option>
+          `,
+        )}
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>
+
+With `multiple-choice` flag configured, multiple options can be checked.
+
+<Preview>
+  <Story name="Orientation horizontal multiple">
+    {html`
+      <lion-listbox
+        name="combo"
+        label="Orientation horizontal multiple"
+        orientation="horizontal"
+        multiple-choice
+      >
+        ${listboxData.slice(0, 10).map(
+          entry => html`
+            <lion-option value="${entry}" style="display:inline-block;">${entry}</lion-option>
+          `,
+        )}
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>

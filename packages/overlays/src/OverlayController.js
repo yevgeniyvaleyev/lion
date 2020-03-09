@@ -189,6 +189,7 @@ export class OverlayController {
         this.constructor.popperModule = preloadPopper();
       }
     }
+    console.log('innie t');
     this._handleFeatures({ phase: 'init' });
   }
 
@@ -254,7 +255,7 @@ export class OverlayController {
       if (this.invokerNode) {
         this.invokerNode.setAttribute('aria-expanded', this.isShown);
       }
-      if (!this.contentNode.role) {
+      if (!this.contentNode.hasAttribute('role')) {
         this.contentNode.setAttribute('role', 'dialog');
       }
     }
@@ -282,6 +283,8 @@ export class OverlayController {
     this.dispatchEvent(event);
     if (!event.defaultPrevented) {
       this._contentNodeWrapper.style.display = this.placementMode === 'local' ? 'inline-block' : '';
+      console.log('showwwwwtt', this._contentNodeWrapper);
+
       await this._handleFeatures({ phase: 'show' });
       await this._handlePosition({ phase: 'show' });
       this.elementToFocusAfterHide = elementToFocusAfterHide;
@@ -325,8 +328,10 @@ export class OverlayController {
     const event = new CustomEvent('before-hide', { cancelable: true });
     this.dispatchEvent(event);
     if (!event.defaultPrevented) {
-      // await this.transitionHide({ backdropNode: this.backdropNode, conentNode: this.contentNode });
+      // await this.transitionHide({ backdropNode: this.backdropNode, contentNode: this.contentNode });
       this._contentNodeWrapper.style.display = 'none';
+      console.log('hidettt');
+
       this._handleFeatures({ phase: 'hide' });
       this.dispatchEvent(new Event('hide'));
       this._restoreFocus();
@@ -568,9 +573,12 @@ export class OverlayController {
   }
 
   _handleHidesOnOutsideClick({ phase }) {
-    const addOrRemoveListener = phase === 'show' ? 'addEventListener' : 'removeEventListener';
+    if (phase === 'show' || phase === 'hide') {
+      return;
+    }
+    const addOrRemoveListener = phase === 'init' ? 'addEventListener' : 'removeEventListener';
 
-    if (phase === 'show') {
+    if (phase === 'init') {
       let wasClickInside = false;
       // handle on capture phase and remember till the next task that there was an inside click
       this.__preventCloseOutsideClick = () => {
