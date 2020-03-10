@@ -71,12 +71,12 @@ export const ChoiceInputLightMixin = superclass =>
       this.__choiceValue = v;
     }
 
-    updated(changedProperties) {
-      super.updated(changedProperties);
+    _requestUpdate(name, old) {
+      super._requestUpdate(name, old);
 
-      if (changedProperties.has('checked')) {
+      if (name === 'checked') {
         this.__syncCheckedToInputElement();
-        this.dispatchEvent(new Event('checked', { bubbles: true, composed: true }));
+        this.dispatchEvent(new Event('checked-changed', { bubbles: true }));
       }
     }
 

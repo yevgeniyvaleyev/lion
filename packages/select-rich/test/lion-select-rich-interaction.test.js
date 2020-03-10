@@ -113,9 +113,11 @@ describe('lion-select-rich interactions', () => {
       expect(el.modelValue).to.equal(30);
 
       el._listboxNode.dispatchEvent(new KeyboardEvent('keyup', { key: 'Home' }));
+      await el.updateComplete;
       expect(el.modelValue).to.equal(10);
 
       el._listboxNode.dispatchEvent(new KeyboardEvent('keyup', { key: 'End' }));
+      await el.updateComplete;
       expect(el.modelValue).to.equal(40);
     });
 
@@ -180,11 +182,13 @@ describe('lion-select-rich interactions', () => {
       expectOnlyGivenOneOptionToBeChecked(options, 0);
 
       el._listboxNode.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown' }));
+      await el.updateComplete;
       expect(el.activeIndex).to.equal(1);
       expect(el.checkedIndex).to.equal(1);
       expectOnlyGivenOneOptionToBeChecked(options, 1);
 
       el._listboxNode.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }));
+      await el.updateComplete;
       expect(el.activeIndex).to.equal(0);
       expect(el.checkedIndex).to.equal(0);
       expectOnlyGivenOneOptionToBeChecked(options, 0);
@@ -216,10 +220,12 @@ describe('lion-select-rich interactions', () => {
       expectOnlyGivenOneOptionToBeChecked(options, 0);
 
       el.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown' }));
+      await el.updateComplete;
       expect(el.checkedIndex).to.equal(1);
       expectOnlyGivenOneOptionToBeChecked(options, 1);
 
       el.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }));
+      await el.updateComplete;
       expect(el.checkedIndex).to.equal(0);
       expectOnlyGivenOneOptionToBeChecked(options, 0);
     });
@@ -450,6 +456,7 @@ describe('lion-select-rich interactions', () => {
       `);
       const option = el.querySelectorAll('lion-option')[1];
       option.checked = true;
+      await el.updateComplete;
       expect(el.modelValue).to.equal(20);
     });
 
@@ -483,6 +490,7 @@ describe('lion-select-rich interactions', () => {
       const options = el.querySelectorAll('lion-option');
       expect(options[0].checked).to.be.true;
       options[1].checked = true;
+      await el.updateComplete;
       expect(options[0].checked).to.be.false;
     });
 
@@ -572,6 +580,7 @@ describe('lion-select-rich interactions', () => {
       expect(el.validationStates.error).to.have.a.property('Required');
 
       el.modelValue = 20;
+      await el.updateComplete;
       expect(el.hasFeedbackFor).not.to.include('error');
       expect(el.validationStates).to.have.a.property('error');
       expect(el.validationStates.error).not.to.have.a.property('Required');
@@ -658,6 +667,7 @@ describe('lion-select-rich interactions', () => {
       options[0].checked = true;
       await el.feedbackComplete;
       await el.updateComplete;
+      console.log('before expect');
       expect(invokerNode.getAttribute('aria-invalid')).to.equal('true');
 
       options[1].checked = true;

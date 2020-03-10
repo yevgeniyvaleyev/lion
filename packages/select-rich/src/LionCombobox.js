@@ -1,219 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
-import { LitElement, html, css, SlotMixin, nothing } from '@lion/core';
+import { LitElement, html, SlotMixin } from '@lion/core';
 import { OverlayMixin, withDropdownConfig } from '@lion/overlays';
-import { FocusMixin } from '@lion/field';
 import { ListboxMixin } from './ListboxMixin.js';
-
-/**
- * Renders the wrapper containing the textbox that triggers the listbox with filtered options.
- * Optionally, shows 'chips' that indicate the selection.
- * Should be considered an internal/protected web component to be used in conjunction with
- * LionCombobox
- *
- * Please note that this is purely a visual component: accessibility and user interaction are
- * handled by LionCombobox.
- */
-class LionComboboxTextbox extends FocusMixin(SlotMixin(LitElement)) {
-  static get properties() {
-    return {
-      multipleChoice: {
-        type: Boolean,
-        attribute: 'multiple-choice',
-      },
-      /**
-       * @desc Array of options. Needed to render
-       * chips and currntly selected value
-       * @type {LionOption[]}
-       */
-      selectedElements: Array,
-      disabled: {
-        type: Boolean,
-        reflect: true,
-      },
-      /**
-       * @desc When the connected LionSelectRich insteance is readOnly,
-       * this should be reflected in the invoker as well
-       */
-      readOnly: {
-        type: Boolean,
-        reflect: true,
-        attribute: 'readonly',
-      },
-      /**
-       * Can be used to visually indicate the next
-       */
-      removeChipOnNextBackspace: Boolean,
-    };
-  }
-
-  static get styles() {
-    // TODO: share input-group css?
-    return css`
-      :host {
-        display: flex;
-      }
-
-      .combobox__selection {
-        flex: none;
-      }
-
-      .combobox__input {
-        flex: 1;
-      }
-
-      .selection-chip {
-        border-radius: 4px;
-        background-color: #eee;
-        padding: 4px;
-        font-size: 10px;
-      }
-
-      .selection-chip--highlighted {
-        background-color: #ccc;
-      }
-
-      ::slotted([slot='_textbox']) {
-        outline: none;
-        width: 100%;
-        height: 100%;
-        box-sizing: border-box;
-        border: none;
-        border-bottom: 1px solid;
-      }
-    `;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get slots() {
-    return {
-      _textbox: () => document.createElement('input'),
-    };
-  }
-
-  get _textboxNode() {
-    return this.querySelector('[slot=_textbox]');
-  }
-
-  /**
-   * @configure FocusMixin
-   */
-  get _inputNode() {
-    return this._textboxNode;
-  }
-
-  constructor() {
-    super();
-    this.selectedElements = [];
-    this.multipleChoice = false;
-
-    this.__textboxOnKeyup = this.__textboxOnKeyup.bind(this);
-    this.__restoreBackspace = this.__restoreBackspace.bind(this);
-  }
-
-  firstUpdated(changedProperties) {
-    super.firstUpdated(changedProperties);
-
-    if (this.multipleChoice) {
-      this._textboxNode.addEventListener('keyup', this.__textboxOnKeyup);
-      this._textboxNode.addEventListener('focusout', this.__restoreBackspace);
-    }
-  }
-
-  updated(changedProperties) {
-    super.updated(changedProperties);
-    if (changedProperties.has('selectedElements')) {
-      if (this.multipleChoice || !this.selectedElements.length) {
-        this._textboxNode.value = '';
-      } else {
-        this._textboxNode.value = this.selectedElements[0].value;
-      }
-      if (this.multipleChoice) {
-        this.__reorderChips();
-      }
-    }
-  }
-
-  /**
-   * Whenever selectedElements are updated, makes sure that latest added elements
-   * are shown latest, and deleted elements respect existing order of chips.
-   */
-  __reorderChips() {
-    const { selectedElements } = this;
-    if (this.__prevSelectedEls) {
-      const addedEls = selectedElements.filter(e => !this.__prevSelectedEls.includes(e));
-      const deletedEls = this.__prevSelectedEls.filter(e => !selectedElements.includes(e));
-      if (addedEls.length) {
-        this.selectedElements = [...this.__prevSelectedEls, ...addedEls];
-      } else if (deletedEls.length) {
-        deletedEls.forEach(delEl => {
-          this.__prevSelectedEls.splice(this.__prevSelectedEls.indexOf(delEl), 1);
-        });
-        this.selectedElements = this.__prevSelectedEls;
-      }
-    }
-    this.__prevSelectedEls = this.selectedElements;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  _selectedElementTemplate(option, highlight) {
-    return html`
-      <span class="selection-chip ${highlight ? 'selection-chip--highlighted' : ''}">
-        ${option.value}
-      </span>
-    `;
-  }
-
-  _selectedElementsTemplate() {
-    if (!this.multipleChoice) {
-      return nothing;
-    }
-    return html`
-      <div class="combobox__selection">
-        ${this.selectedElements.map((option, i) => {
-          const highlight =
-            this.removeChipOnNextBackspace && i === this.selectedElements.length - 1;
-          return this._selectedElementTemplate(option, highlight);
-        })}
-      </div>
-    `;
-  }
-
-  render() {
-    return html`
-      ${this._selectedElementsTemplate()}
-      <div class="combobox__input">
-        <slot name="_textbox"></slot>
-      </div>
-    `;
-  }
-
-  __textboxOnKeyup(ev) {
-    // Why we handle here and not in LionComboboxTextbox:
-    // All selectedElements state truth should be kept here and should not go back
-    // and forth.
-    if (ev.key === 'Backspace') {
-      if (!this._textboxNode.value) {
-        if (this.removeChipOnNextBackspace) {
-          this.selectedElements[this.selectedElements.length - 1].checked = false;
-        }
-        this.removeChipOnNextBackspace = true;
-      }
-    } else {
-      this.removeChipOnNextBackspace = false;
-    }
-
-    // TODO: move to LionCombobox
-    if (ev.key === 'Escape') {
-      console.log('ontznab');
-      this._textboxNode.value = '';
-    }
-  }
-
-  __restoreBackspace() {
-    this.removeChipOnNextBackspace = false;
-  }
-}
-customElements.define('lion-combobox-textbox', LionComboboxTextbox);
+import '../lion-combobox-invoker.js';
 
 /**
  * LionListbox: implements the wai-aria listbox design pattern and integrates it as a Lion
@@ -249,7 +38,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
   get slots() {
     return {
       ...super.slots,
-      combobox: () => document.createElement('lion-combobox-textbox'),
+      combobox: () => document.createElement('lion-combobox-invoker'),
     };
   }
 
@@ -260,7 +49,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
     return this.querySelector('[slot=combobox]');
   }
 
-  get _comboboxTextboxNode() {
+  get _comboboxTextNode() {
     return this._comboboxNode._textboxNode;
   }
 
@@ -302,14 +91,14 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
     this._comboboxNode.setAttribute('aria-owns', this._listboxNode.id);
     this._comboboxNode.multipleChoice = this.multipleChoice;
 
-    this._comboboxTextboxNode.setAttribute('aria-autocomplete', this.autocomplete);
-    this._comboboxTextboxNode.setAttribute('aria-controls', this._listboxNode.id);
-    this._comboboxTextboxNode.setAttribute('aria-labelledby', this._labelNode.id);
+    this._comboboxTextNode.setAttribute('aria-autocomplete', this.autocomplete);
+    this._comboboxTextNode.setAttribute('aria-controls', this._listboxNode.id);
+    this._comboboxTextNode.setAttribute('aria-labelledby', this._labelNode.id);
 
-    this._comboboxTextboxNode.addEventListener('keyup', this.__listboxOnKeyUp);
-    this._comboboxTextboxNode.addEventListener('keydown', this.__listboxOnKeyDown);
+    this._comboboxTextNode.addEventListener('keyup', this.__listboxOnKeyUp);
+    this._comboboxTextNode.addEventListener('keydown', this.__listboxOnKeyDown);
 
-    this._comboboxTextboxNode.addEventListener('input', ev => {
+    this._comboboxTextNode.addEventListener('input', ev => {
       this.__cboxInputValue = ev.target.value;
       this.__filterListboxNodeVisibility({
         curValue: this.__cboxInputValue,
@@ -329,7 +118,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
 
   __listboxOnClick() {
     super.__listboxOnClick();
-    this._comboboxTextboxNode.focus();
+    this._comboboxTextNode.focus();
     this.__blockListShowDuringTransition();
   }
 
@@ -404,9 +193,9 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
       const beginsWith = option.value.toLowerCase().indexOf(curValue.toLowerCase()) === 0;
       if (beginsWith && !hasAutoFilled && show && userAdds) {
         if (this.autocomplete === 'both') {
-          this._comboboxTextboxNode.value = option.value;
-          this._comboboxTextboxNode.selectionStart = this.__cboxInputValue.length;
-          this._comboboxTextboxNode.selectionEnd = this._comboboxTextboxNode.value.length;
+          this._comboboxTextNode.value = option.value;
+          this._comboboxTextNode.selectionStart = this.__cboxInputValue.length;
+          this._comboboxTextNode.selectionEnd = this._comboboxTextNode.value.length;
         }
         this.activeIndex = index;
         hasAutoFilled = true;
@@ -421,7 +210,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
       // eslint-disable-next-line no-param-reassign
       option.disabled = false;
     });
-    this.__prevCboxValueNonSelected = curValue.slice(0, this._comboboxTextboxNode.selectionStart);
+    this.__prevCboxValueNonSelected = curValue.slice(0, this._comboboxTextNode.selectionStart);
 
     if (this._overlayCtrl && this._overlayCtrl._popper) {
       this._overlayCtrl._popper.update();
@@ -500,14 +289,11 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
     }
   }
 
-  // TODO: below could be shared with SelectRich
+  // TODO: all invoker logic could be shared with SelectRich?
 
   firstUpdated(c) {
     super.firstUpdated(c);
     this.__setupOverlay();
-    // this.__setupInvokerNode();
-    // this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
-    // this.__toggleInvokerDisabled();
   }
 
   __setupOverlay() {
@@ -518,12 +304,6 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
       this._listboxNode.focus();
     };
     this._overlayCtrl.addEventListener('show', this.__overlayOnShow);
-
-    // this.__overlayOnHide = () => {
-    //   this._comboboxNode.focus();
-    // };
-    // this._overlayCtrl.addEventListener('hide', this.__overlayOnHide);
-
     this.__preventScrollingWithArrowKeys = this.__preventScrollingWithArrowKeys.bind(this);
     this._scrollTargetNode.addEventListener('keydown', this.__preventScrollingWithArrowKeys);
   }
@@ -565,16 +345,9 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
         return;
       }
       this.opened = true;
-      // this._overlayCtrl.show();
     };
-    this.__hideOverlay = () => {
-      // this.opened = false;
-    };
-
     this._overlayInvokerNode.addEventListener('focusin', this.__showOverlay);
     this._overlayInvokerNode.addEventListener('keyup', this.__showOverlay);
-
-    // this._overlayInvokerNode.addEventListener('focusout', this.__hideOverlay);
   }
 
   /**
@@ -583,13 +356,12 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
   _teardownOpenCloseListeners() {
     super._teardownOpenCloseListeners();
     this._overlayInvokerNode.removeEventListener('focusin', this.__showOverlay);
-    // this._overlayInvokerNode.removeEventListener('focusout', this.__hideOverlay);
   }
 
   __onChildActiveChanged(ev) {
     super.__onChildActiveChanged(ev);
     if (ev.target.active) {
-      this._comboboxTextboxNode.setAttribute('aria-activedescendant', ev.target.id);
+      this._comboboxTextNode.setAttribute('aria-activedescendant', ev.target.id);
     }
   }
 }

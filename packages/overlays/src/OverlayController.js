@@ -189,7 +189,6 @@ export class OverlayController {
         this.constructor.popperModule = preloadPopper();
       }
     }
-    console.log('innie t');
     this._handleFeatures({ phase: 'init' });
   }
 
@@ -283,8 +282,6 @@ export class OverlayController {
     this.dispatchEvent(event);
     if (!event.defaultPrevented) {
       this._contentNodeWrapper.style.display = this.placementMode === 'local' ? 'inline-block' : '';
-      console.log('showwwwwtt', this._contentNodeWrapper);
-
       await this._handleFeatures({ phase: 'show' });
       await this._handlePosition({ phase: 'show' });
       this.elementToFocusAfterHide = elementToFocusAfterHide;
@@ -330,8 +327,6 @@ export class OverlayController {
     if (!event.defaultPrevented) {
       // await this.transitionHide({ backdropNode: this.backdropNode, contentNode: this.contentNode });
       this._contentNodeWrapper.style.display = 'none';
-      console.log('hidettt');
-
       this._handleFeatures({ phase: 'hide' });
       this.dispatchEvent(new Event('hide'));
       this._restoreFocus();

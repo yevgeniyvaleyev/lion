@@ -126,7 +126,7 @@ export const ListboxMixin = dedupeMixin(
         return options.filter(o => o.checked).map(o => options.indexOf(o));
       }
 
-      // TODO: make this a method...
+      // TODO: make this a method, since for multipleChoice works a bit weird ...
       set checkedIndex(index) {
         if (this._listboxNode.children[index]) {
           if (!this.multipleChoice) {
@@ -273,14 +273,14 @@ export const ListboxMixin = dedupeMixin(
 
         this._listboxNode.addEventListener('active-changed', this.__onChildActiveChanged);
         // this._listboxNode.addEventListener('model-value-changed', this.__onChildCheckedChanged);
-        this._listboxNode.addEventListener('checked', this.__onChildCheckedChanged);
+        this._listboxNode.addEventListener('checked-changed', this.__onChildCheckedChanged);
         this.addEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
 
       __teardownEventListeners() {
         this._listboxNode.removeEventListener('active-changed', this.__onChildActiveChanged);
         // this._listboxNode.removeEventListener('model-value-changed', this.__onChildCheckedChanged);
-        this._listboxNode.removeEventListener('checked', this.__onChildCheckedChanged);
+        this._listboxNode.removeEventListener('checked-changed', this.__onChildCheckedChanged);
         this.removeEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
 

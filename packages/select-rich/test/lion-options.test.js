@@ -8,6 +8,6 @@ describe('lion-options', () => {
     const el = await fixture(html`
       <lion-options .registrationTarget=${registrationTargetEl}></lion-options>
     `);
-    expect(el.role).to.equal('listbox');
+    expect(el.getAttribute('role')).to.equal('listbox');
   });
 });
