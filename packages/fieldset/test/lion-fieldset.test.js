@@ -1,3 +1,4 @@
+import { LitElement } from '@lion/core';
 import {
   expect,
   fixture,
@@ -804,6 +805,48 @@ describe('<lion-fieldset>', () => {
           color: { checked: false, value: 'blue' },
         },
       });
+    });
+
+    it('sets modelvalue on dynamically rendered fieldset', async () => {
+      const dynamicallyRenderedFieldsetTagString = defineCE(
+        class extends LitElement {
+          static get properties() {
+            return {
+              fields: Array,
+            };
+          }
+
+          constructor() {
+            super();
+            this.fields = [];
+          }
+
+          render() {
+            return html`
+              <${tag} .modelValue=${{ firstName: 'foo', lastName: 'bar' }}>
+                ${this.fields.map(
+                  fieldname => html`
+                  <${childTag} name="${fieldname}"></${childTag}>
+                `,
+                )}
+              </${tag}>
+            `;
+          }
+        },
+      );
+
+      const dynamicallyRenderedFieldsetTag = unsafeStatic(dynamicallyRenderedFieldsetTagString);
+      const el = await fixture(html`
+        <${dynamicallyRenderedFieldsetTag}></${dynamicallyRenderedFieldsetTag}>
+      `);
+
+      await el.updateComplete;
+
+      el.fields = ['firstName', 'lastName'];
+      await el.updateComplete;
+      const lionFieldSet = el.shadowRoot.querySelector('lion-fieldset');
+
+      expect(lionFieldSet.firstElementChild.modelValue).to.equal('foo');
     });
   });
 
