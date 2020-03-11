@@ -1,8 +1,8 @@
-import { html, LitElement, SlotMixin } from '@lion/core';
+import { html } from '@lion/core';
 import { OverlayMixin, withDropdownConfig } from '@lion/overlays';
 import '../lion-select-invoker.js';
 import './differentKeyNamesShimIE.js';
-import { ListboxMixin } from './ListboxMixin.js';
+import { LionListbox } from './LionListbox.js';
 
 /**
  * LionSelectRich: wraps the <lion-listbox> element
@@ -10,12 +10,19 @@ import { ListboxMixin } from './ListboxMixin.js';
  * @customElement lion-select-rich
  * @extends {LitElement}
  */
-export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitElement))) {
+export class LionSelectRich extends OverlayMixin(LionListbox) {
   get slots() {
     return {
       ...super.slots,
       invoker: () => document.createElement('lion-select-invoker'),
     };
+  }
+
+  get _inputNode() {
+    // In FormControl, we get direct child [slot="input"]. This doesn't work, because the overlay
+    // system wraps it in [slot="_overlay-shadow-outlet"]
+    // TODO: find a way to solve this by putting the wrapping part in shadow dom...
+    return this.querySelector('[slot="input"]');
   }
 
   get _invokerNode() {
@@ -56,31 +63,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     this.__toggleInvokerDisabled();
   }
 
-  _requestUpdate(name, oldValue) {
-    super._requestUpdate(name, oldValue);
-    if (name === 'disabled' || name === 'readOnly') {
-      this.__toggleInvokerDisabled();
-    }
-    if (name === 'modelValue') {
-      this.__syncInvokerElement();
-    }
-  }
-
-  get _inputNode() {
-    // In FormControl, we get direct child [slot="input"]. This doesn't work, because the overlay
-    // system wraps it in [slot="_overlay-shadow-outlet"]
-    // TODO: find a way to solve this by putting the wrapping part in shadow dom...
-    return this.querySelector('[slot="input"]');
-  }
-
-  render() {
-    return html`
-      ${this._labelTemplate()} ${this._helpTextTemplate()} ${this._inputGroupTemplate()}
-      ${this._feedbackTemplate()}
-      <slot name="_overlay-shadow-outlet"></slot>
-    `;
-  }
-
   updated(changedProps) {
     super.updated(changedProps);
 
@@ -114,9 +96,22 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     }
   }
 
-  // TODO: why not put this on OverlayMixin?
-  toggle() {
-    this.opened = !this.opened;
+  _requestUpdate(name, oldValue) {
+    super._requestUpdate(name, oldValue);
+    if (name === 'disabled' || name === 'readOnly') {
+      this.__toggleInvokerDisabled();
+    }
+    if (name === 'modelValue') {
+      this.__syncInvokerElement();
+    }
+  }
+
+  render() {
+    return html`
+      ${this._labelTemplate()} ${this._helpTextTemplate()} ${this._inputGroupTemplate()}
+      ${this._feedbackTemplate()}
+      <slot name="_overlay-shadow-outlet"></slot>
+    `;
   }
 
   /**
@@ -132,39 +127,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
       </div>
     `;
   }
-
-  // /**
-  //  * Overrides FormRegistrar adding to make sure children have specific default states when added
-  //  *
-  //  * @override
-  //  * @param {*} child
-  //  * @param {Number} indexToInsertAt
-  //  */
-  // addFormElement(child, indexToInsertAt) {
-  //   super.addFormElement(child, indexToInsertAt);
-
-  //   // we need to adjust the elements being registered
-  //   /* eslint-disable no-param-reassign */
-  //   child.id = child.id || `${this.localName}-option-${uuid()}`;
-
-  //   if (this.disabled) {
-  //     child.makeRequestToBeDisabled();
-  //   }
-
-  //   // the first elements checked by default
-  //   if (!this.__hasInitialSelectedFormElement && (!child.disabled || this.disabled)) {
-  //     child.active = true;
-  //     child.checked = true;
-  //     this.__hasInitialSelectedFormElement = true;
-  //   }
-
-  //   this.__setAttributeForAllFormElements('aria-setsize', this.formElements.length);
-  //   child.setAttribute('aria-posinset', this.formElements.length);
-
-  //   this.__onChildModelValueChanged({ target: child });
-  //   this.resetInteractionState();
-  //   /* eslint-enable no-param-reassign */
-  // }
 
   __setupEventListeners() {
     super.__setupEventListeners();
@@ -202,7 +164,7 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
         if (this.interactionMode === 'mac') {
           this.opened = true;
         } else {
-          this.checkedIndex = this.__getPreviousEnabledOption(this.checkedIndex);
+          this._handleCheckedIndex(this.__getPreviousEnabledOption(this.checkedIndex));
         }
         break;
       case 'ArrowDown':
@@ -210,7 +172,7 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
         if (this.interactionMode === 'mac') {
           this.opened = true;
         } else {
-          this.checkedIndex = this.__getNextEnabledOption(this.checkedIndex);
+          this._handleCheckedIndex(this.__getNextEnabledOption(this.checkedIndex));
         }
         break;
       /* no default */
@@ -242,47 +204,6 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     this._invokerNode.removeEventListener('click', this.__invokerOnClick);
     this._invokerNode.removeEventListener('blur', this.__invokerOnBlur);
   }
-
-  // /**
-  //  * For ShadyDom the listboxNode is available right from the start so we can add those events
-  //  * immediately.
-  //  * For native ShadowDom the select gets render before the listboxNode is available so we
-  //  * will add an event to the slotchange and add the events once available.
-  //  */
-  // __setupListboxNode() {
-  //   if (this._listboxNode) {
-  //     this.__setupListboxNodeEventListener();
-  //   } else {
-  //     const inputSlot = this.shadowRoot.querySelector('slot[name=input]');
-  //     if (inputSlot) {
-  //       inputSlot.addEventListener('slotchange', () => {
-  //         this.__setupListboxNodeEventListener();
-  //       });
-  //     }
-  //   }
-  // }
-
-  // __setupListboxNodeEventListener() {
-  //   this.__listboxOnClick = () => {
-  //     this.opened = false;
-  //   };
-
-  //   this._listboxNode.addEventListener('click', this.__listboxOnClick);
-
-  //   this.__listboxOnKeyUp = this.__listboxOnKeyUp.bind(this);
-  //   this._listboxNode.addEventListener('keyup', this.__listboxOnKeyUp);
-
-  //   this.__listboxOnKeyDown = this.__listboxOnKeyDown.bind(this);
-  //   this._listboxNode.addEventListener('keydown', this.__listboxOnKeyDown);
-  // }
-
-  // __teardownListboxNode() {
-  //   if (this._listboxNode) {
-  //     this._listboxNode.removeEventListener('click', this.__listboxOnClick);
-  //     this._listboxNode.removeEventListener('keyup', this.__listboxOnKeyUp);
-  //     this._listboxNode.removeEventListener('keydown', this.__listboxOnKeyDown);
-  //   }
-  // }
 
   // eslint-disable-next-line class-methods-use-this
   _defineOverlayConfig() {
@@ -329,20 +250,9 @@ export class LionSelectRich extends OverlayMixin(ListboxMixin(SlotMixin(LitEleme
     return this._listboxNode;
   }
 
-  // set fieldName(value) {
-  //   this.__fieldName = value;
-  // }
-
-  // get fieldName() {
-  //   const label =
-  //     this.label ||
-  //     (this.querySelector('[slot=label]') && this.querySelector('[slot=label]').textContent);
-  //   return this.__fieldName || label || this.name;
-  // }
-
   /**
-   * @extend ListboxMixin > FormRegistrarMixin
-   * @param {*} child
+   * @override adds to ListboxMixin > FormRegistrarMixin
+   * @param {Element} child
    * @param {Number} indexToInsertAt
    */
   addFormElement(child, indexToInsertAt) {

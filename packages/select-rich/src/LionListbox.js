@@ -1,4 +1,6 @@
 import { LitElement } from '@lion/core';
+import { FormControlMixin, InteractionStateMixin } from '@lion/field';
+import { ValidateMixin } from '@lion/validate';
 import { ListboxMixin } from './ListboxMixin.js';
 
 /**
@@ -8,4 +10,6 @@ import { ListboxMixin } from './ListboxMixin.js';
  * @customElement lion-select-rich
  * @extends {LitElement}
  */
-export class LionListbox extends ListboxMixin(LitElement) {}
+export class LionListbox extends ListboxMixin(
+  FormControlMixin(InteractionStateMixin(ValidateMixin(LitElement))),
+) {}

@@ -1,7 +1,6 @@
 import { ChoiceGroupMixin } from '@lion/choice-input';
-import { css, html, dedupeMixin } from '@lion/core';
-import { FormControlMixin, FormRegistrarMixin, InteractionStateMixin } from '@lion/field';
-import { ValidateMixin } from '@lion/validate';
+import { css, html, dedupeMixin, SlotMixin } from '@lion/core';
+import { FormRegistrarMixin } from '@lion/field';
 import './differentKeyNamesShimIE.js';
 import '../lion-options.js';
 
@@ -41,37 +40,59 @@ function isInView(container, element, partial = false) {
 export const ListboxMixin = dedupeMixin(
   superclass =>
     // eslint-disable-next-line no-shadow, no-unused-vars
-    class ListboxMixin extends ChoiceGroupMixin(
-      FormRegistrarMixin(InteractionStateMixin(ValidateMixin(FormControlMixin(superclass)))),
-    ) {
+    class ListboxMixin extends ChoiceGroupMixin(FormRegistrarMixin(SlotMixin(superclass))) {
       static get properties() {
         return {
           disabled: {
             type: Boolean,
             reflect: true,
           },
-
+          /**
+           * @desc A Boolean attribute which, if present, indicates that the user should not be able to edit
+           * the value of the input. The difference between disabled and readonly is that read-only
+           * controls can still function, whereas disabled controls generally do not function as
+           * controls until they are enabled.
+           * (From: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#attr-readonly)
+           */
           readOnly: {
             type: Boolean,
             reflect: true,
             attribute: 'readonly',
           },
-
-          interactionMode: {
-            type: String,
-            attribute: 'interaction-mode',
-          },
-
-          checkedIndex: Boolean,
-          activeIndex: Boolean,
-
           /**
            * @desc Informs screenreader and affects keyboard navigation.
            * By default 'vertical'
            * @type {'vertical'|'horizontal'}
            */
-          orientation: {
+          orientation: String,
+          /**
+           * @desc When true, will synchronize activedescendant and selected element on
+           * arrow key navigation.
+           * This behavior can usually be seen on <select> on the Windows polatform.
+           * Note that this behavior cannot be used when multiple-choice is true.
+           * See: https://www.w3.org/TR/wai-aria-practices/#kbd_selection_follows_focus
+           */
+          selectionFollowsFocus: {
+            type: Boolean,
+            attribute: 'selection-follows-focus',
+          },
+          /**
+           * @desc Will give first option active state when navigated to the next option from
+           * last option.
+           */
+          rotateKeyboardNavigation: {
+            type: Boolean,
+            attribute: 'rotate-keyboard-navigation',
+          },
+          // TODO: move to RichSelect
+          /**
+           * @desc Aligns behavior for 'selectionFollowFocus' and 'navigateFromInvoker' with
+           * platform. When 'auto' (default), platform is automatically detected
+           * @type {'windows/linux'|'mac'\'auto'}
+           */
+          interactionMode: {
             type: String,
+            attribute: 'interaction-mode',
           },
         };
       }
@@ -106,10 +127,6 @@ export const ListboxMixin = dedupeMixin(
         return this._inputNode;
       }
 
-      // get _inputNode() {
-      //   return this.querySelector('[slot=input]');
-      // }
-
       get _listboxActiveDescendantNode() {
         return this._listboxNode.querySelector(`#${this._listboxActiveDescendant}`);
       }
@@ -126,8 +143,7 @@ export const ListboxMixin = dedupeMixin(
         return options.filter(o => o.checked).map(o => options.indexOf(o));
       }
 
-      // TODO: make this a method, since for multipleChoice works a bit weird ...
-      set checkedIndex(index) {
+      _handleCheckedIndex(index) {
         if (this._listboxNode.children[index]) {
           if (!this.multipleChoice) {
             this._listboxNode.children[index].checked = true;
@@ -272,14 +288,12 @@ export const ListboxMixin = dedupeMixin(
         this.__onChildCheckedChanged = this.__onChildCheckedChanged.bind(this);
 
         this._listboxNode.addEventListener('active-changed', this.__onChildActiveChanged);
-        // this._listboxNode.addEventListener('model-value-changed', this.__onChildCheckedChanged);
         this._listboxNode.addEventListener('checked-changed', this.__onChildCheckedChanged);
         this.addEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
 
       __teardownEventListeners() {
         this._listboxNode.removeEventListener('active-changed', this.__onChildActiveChanged);
-        // this._listboxNode.removeEventListener('model-value-changed', this.__onChildCheckedChanged);
         this._listboxNode.removeEventListener('checked-changed', this.__onChildCheckedChanged);
         this.removeEventListener('keydown', this.__preventScrollingWithArrowKeys);
       }
@@ -316,11 +330,6 @@ export const ListboxMixin = dedupeMixin(
               }
             });
           }
-          // if (!this.multipleChoice) {
-          //   this.modelValue = target.choiceValue;
-          // } else {
-          //   // this.modelValue
-          // }
         }
         this.requestUpdate('modelValue');
       }
@@ -366,7 +375,7 @@ export const ListboxMixin = dedupeMixin(
           case ' ':
             ev.preventDefault();
             if (this.interactionMode === 'mac' || this.multipleChoice) {
-              this.checkedIndex = this.activeIndex;
+              this._handleCheckedIndex(this.activeIndex);
             }
             if (!this.multipleChoice) {
               this.opened = false;
@@ -410,7 +419,7 @@ export const ListboxMixin = dedupeMixin(
           this.interactionMode === 'windows/linux' &&
           !this.multipleChoice
         ) {
-          this.checkedIndex = this.activeIndex;
+          this._handleCheckedIndex(this.activeIndex);
         }
       }
 
@@ -497,18 +506,6 @@ export const ListboxMixin = dedupeMixin(
           this._listboxNode.removeEventListener('keyup', this.__listboxOnKeyUp);
           this._listboxNode.removeEventListener('keydown', this.__listboxOnKeyDown);
         }
-      }
-
-      // TODO: find out why this cannot be inherited from FormControlMixin
-      set fieldName(value) {
-        this.__fieldName = value;
-      }
-
-      get fieldName() {
-        const label =
-          this.label ||
-          (this.querySelector('[slot=label]') && this.querySelector('[slot=label]').textContent);
-        return this.__fieldName || label || this.name;
       }
 
       __preventScrollingWithArrowKeys(ev) {

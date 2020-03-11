@@ -471,8 +471,8 @@ describe('lion-select-rich interactions', () => {
       expect(() => {
         el.activeIndex = -1;
         el.activeIndex = 1;
-        el.checkedIndex = -1;
-        el.checkedIndex = 1;
+        el._handleCheckedIndex(-1);
+        el._handleCheckedIndex(1);
       }).to.not.throw();
       expect(el.checkedIndex).to.equal(0);
       expect(el.activeIndex).to.equal(0);

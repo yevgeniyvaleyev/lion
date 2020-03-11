@@ -40,6 +40,7 @@ export class LionComboboxInvoker extends FocusMixin(SlotMixin(LitElement)) {
       /**
        * Can be used to visually indicate the next
        */
+      // TODO: make this index or el
       removeChipOnNextBackspace: Boolean,
     };
   }

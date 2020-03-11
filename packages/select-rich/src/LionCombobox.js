@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
-import { LitElement, html, SlotMixin } from '@lion/core';
+import { html } from '@lion/core';
 import { OverlayMixin, withDropdownConfig } from '@lion/overlays';
-import { ListboxMixin } from './ListboxMixin.js';
+import { LionListbox } from './LionListbox.js';
 import '../lion-combobox-invoker.js';
 
 /**
@@ -11,7 +11,7 @@ import '../lion-combobox-invoker.js';
  * @customElement lion-select-rich
  * @extends {LitElement}
  */
-export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement))) {
+export class LionCombobox extends OverlayMixin(LionListbox) {
   static get properties() {
     return {
       /**
@@ -81,6 +81,9 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
     if (changedProperties.has('modelValue')) {
       this.__syncComboboxElement();
     }
+    if (changedProperties.has('autocomplete')) {
+      this._comboboxTextNode.setAttribute('aria-autocomplete', this.autocomplete);
+    }
   }
 
   async __setupCombobox() {
@@ -106,14 +109,14 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
       });
     });
 
-    setTimeout(() => {
-      this.__cboxInputValue = '';
-      this.__prevCboxValueNonSelected = '';
-      this.__filterListboxNodeVisibility({
-        curValue: this.__cboxInputValue,
-        prevValue: this.__prevCboxValueNonSelected,
-      });
-    });
+    // setTimeout(() => {
+    //   this.__cboxInputValue = '';
+    //   this.__prevCboxValueNonSelected = '';
+    //   this.__filterListboxNodeVisibility({
+    //     curValue: this.__cboxInputValue,
+    //     prevValue: this.__prevCboxValueNonSelected,
+    //   });
+    // });
   }
 
   __listboxOnClick() {
@@ -130,7 +133,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
   /**
    * @overridable
    */
-  _filterOptionCondition(option, curValue) {
+  filterOptionCondition(option, curValue) {
     const idx = option.value.toLowerCase().indexOf(curValue.toLowerCase());
     if (this.matchMode === 'all') {
       return idx > -1; // matches part of word
@@ -174,7 +177,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
         visibleOptions.push(option);
         return;
       }
-      const show = this._filterOptionCondition(option, curValue);
+      const show = this.filterOptionCondition(option, curValue);
       // eslint-disable-next-line no-param-reassign
       option.style.display = 'none';
       // eslint-disable-next-line no-param-reassign
@@ -230,6 +233,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
   /**
    * @desc When transitoning from navigating listbox to selecting value via enter (focusing textbox),
    * showing conditions for listbox overlay should be blocked for 1 tick.
+   * This is because textbox has a keyboard event listener, on which it opens
    */
   __blockListShowDuringTransition() {
     this.__blockListboxShow = true;
@@ -293,7 +297,17 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
 
   firstUpdated(c) {
     super.firstUpdated(c);
+    this.__initFilterListbox();
     this.__setupOverlay();
+  }
+
+  __initFilterListbox() {
+    this.__cboxInputValue = '';
+    this.__prevCboxValueNonSelected = '';
+    this.__filterListboxNodeVisibility({
+      curValue: this.__cboxInputValue,
+      prevValue: this.__prevCboxValueNonSelected,
+    });
   }
 
   __setupOverlay() {
@@ -356,6 +370,7 @@ export class LionCombobox extends OverlayMixin(ListboxMixin(SlotMixin(LitElement
   _teardownOpenCloseListeners() {
     super._teardownOpenCloseListeners();
     this._overlayInvokerNode.removeEventListener('focusin', this.__showOverlay);
+    this._overlayInvokerNode.removeEventListener('keyup', this.__showOverlay);
   }
 
   __onChildActiveChanged(ev) {

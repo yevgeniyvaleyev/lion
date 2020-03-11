@@ -245,7 +245,7 @@ describe('lion-select-rich', () => {
       const options = el.querySelectorAll('lion-option');
       expect(el._invokerNode.selectedElement).dom.to.equal(options[1]);
 
-      el.checkedIndex = 0;
+      el._handleCheckedIndex(0);
       expect(el._invokerNode.selectedElement).dom.to.equal(options[0]);
     });
 
@@ -596,7 +596,7 @@ describe('lion-select-rich', () => {
         active: true,
       });
 
-      el.checkedIndex = 1;
+      el._handleCheckedIndex(1);
       expect(el.modelValue).to.deep.equal({
         type: 'visacard',
         label: 'Visa Card',
