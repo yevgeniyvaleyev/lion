@@ -15,6 +15,7 @@
   },
   "scripts": {
     "prepublishOnly": "../../scripts/npm-prepublish.js",
+    "start": "cd ../../ && yarn dev-server --open packages/checkbox-group/README.md",
     "test": "cd ../../ && yarn test --grep \"packages/checkbox-group/test/**/*.test.js\"",
     "test:watch": "cd ../../ && yarn test:watch --grep \"packages/checkbox-group/test/**/*.test.js\""
   },
@@ -42,7 +43,6 @@
   "devDependencies": {
     "@lion/localize": "0.9.0",
     "@lion/validate": "0.9.0",
-    "@open-wc/demoing-storybook": "^1.10.4",
     "@open-wc/testing": "^2.5.0",
     "sinon": "^7.2.2"
   }
