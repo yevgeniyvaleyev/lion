@@ -28,7 +28,6 @@
   "files": [
     "docs",
     "src",
-    "stories",
     "test",
     "translations",
     "*.js"
@@ -36,8 +35,5 @@
   "dependencies": {
     "@lion/core": "0.5.0",
     "@lion/overlays": "0.12.8"
-  },
-  "devDependencies": {
-    "@open-wc/testing": "^2.5.0"
   }
 }

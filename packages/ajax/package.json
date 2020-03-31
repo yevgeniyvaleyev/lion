@@ -29,7 +29,6 @@
   "files": [
     "docs",
     "src",
-    "stories",
     "test",
     "translations",
     "*.js"
@@ -37,9 +36,5 @@
   "dependencies": {
     "@bundled-es-modules/axios": "0.18.1",
     "@lion/core": "0.5.0"
-  },
-  "devDependencies": {
-    "@open-wc/testing": "^2.5.0",
-    "sinon": "^7.2.2"
   }
 }

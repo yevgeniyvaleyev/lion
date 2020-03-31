@@ -28,7 +28,6 @@
   "files": [
     "docs",
     "src",
-    "stories",
     "test",
     "test-suites",
     "test-helpers",
@@ -38,10 +37,5 @@
   "dependencies": {
     "@lion/core": "0.5.0",
     "@lion/validate": "0.9.0"
-  },
-  "devDependencies": {
-    "@lion/localize": "0.9.0",
-    "@open-wc/testing": "^2.5.0",
-    "sinon": "^7.2.2"
   }
 }
