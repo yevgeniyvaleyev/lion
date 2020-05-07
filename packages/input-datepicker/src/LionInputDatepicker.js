@@ -206,6 +206,13 @@ export class LionInputDatepicker extends ScopedElementsMixin(OverlayMixin(LionIn
     }
   }
 
+  reset() {
+    if (super.reset) {
+      super.reset();
+    }
+    this._calendarNode.reset();
+  }
+
   /**
    * Defining this overlay as a templates from OverlayMixin
    * this is our source to give as .contentNode to OverlayController.
