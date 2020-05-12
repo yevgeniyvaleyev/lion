@@ -202,6 +202,17 @@ describe('<lion-calendar>', () => {
       expect(elObj.selectedDayObj).to.be.undefined;
     });
 
+    it('recalculates "centralDate" when "selectedDate" is reset', async () => {
+      const el = await fixture(html`
+        <lion-calendar .selectedDate="${new Date('2019/06/15')}"></lion-calendar>
+      `);
+      const elObj = new CalendarObject(el);
+      el.selectedDate = undefined;
+      await el.updateComplete;
+      expect(elObj.selectedDayObj).to.be.undefined;
+      expect(isSameDate(el.centralDate, new Date('2019/06/15'))).to.be.true;
+    });
+
     it('sends event "user-selected-date-changed" when user selects a date', async () => {
       const dateChangedSpy = sinon.spy();
       const el = await fixture(html`

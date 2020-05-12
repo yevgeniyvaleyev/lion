@@ -43,6 +43,12 @@ export const main = () => {
   return html`
     <lion-form>
       <form>
+        <lion-input-datepicker label="Picker" name="picker1"></lion-input-datepicker>
+        <lion-input-datepicker
+          label="Picker with modelValue"
+          name="picker2"
+          .modelValue="${new Date()}"
+        ></lion-input-datepicker>
         <lion-fieldset name="full_name">
           <lion-input
             name="first_name"
@@ -126,9 +132,7 @@ export const main = () => {
         </lion-checkbox-group>
         <lion-input-stepper max="5" min="0" name="rsvp">
           <label slot="label">RSVP</label>
-          <div slot="help-text">
-            Max. 5 guests
-          </div>
+          <div slot="help-text">Max. 5 guests</div>
         </lion-input-stepper>
         <lion-textarea name="comments" label="Comments"></lion-textarea>
         <div class="buttons">

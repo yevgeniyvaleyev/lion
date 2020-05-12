@@ -231,10 +231,6 @@ export class LionCalendar extends LocalizeMixin(LitElement) {
     }
   }
 
-  reset() {
-    this.centralDate = this.__initialCentralDate;
-  }
-
   /**
    * @override
    */
@@ -244,6 +240,7 @@ export class LionCalendar extends LocalizeMixin(LitElement) {
     const map = {
       disableDates: () => this.__disableDatesChanged(),
       centralDate: () => this.__centralDateChanged(),
+      selectedDate: () => this.__selectedDateChanged(),
       __focusedDate: () => this.__focusedDateChanged(),
     };
     if (map[name]) {
@@ -485,6 +482,12 @@ export class LionCalendar extends LocalizeMixin(LitElement) {
   __centralDateChanged() {
     if (this.__connectedCallbackDone) {
       this.__ensureValidCentralDate();
+    }
+  }
+
+  __selectedDateChanged() {
+    if (!this.selectedDate && this.__initialCentralDate) {
+      this.centralDate = this.__initialCentralDate;
     }
   }
 
