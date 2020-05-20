@@ -35,9 +35,9 @@ module.exports = {
 
 ## Features
 
-- Renames named imports and all it's usage
+- Renames named imports and all their usages
 - Adjusts import paths
-- Replace tags in template literals
+- Replaces tags in template literals
 
 ## A Change
 
@@ -64,7 +64,7 @@ changes: [
 ### Paths
 
 Both `variable` and `tag` are required to have a `paths` array which defines how to remap import paths.
-As demos can use multiple ways to import all of them needs to be written down in the config.
+As demos can use multiple ways to import, all of them need to be written down in the config.
 
 ```js
 paths: [
