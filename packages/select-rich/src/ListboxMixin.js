@@ -60,7 +60,7 @@ export const ListboxMixin = dedupeMixin(
             attribute: 'readonly',
           },
           /**
-           * @desc Informs screenreader and affects keyboard navigation.
+           * @desc Informs screen reader and affects keyboard navigation.
            * By default 'vertical'
            * @type {'vertical'|'horizontal'}
            */
@@ -68,7 +68,7 @@ export const ListboxMixin = dedupeMixin(
           /**
            * @desc When true, will synchronize activedescendant and selected element on
            * arrow key navigation.
-           * This behavior can usually be seen on <select> on the Windows polatform.
+           * This behavior can usually be seen on <select> on the Windows platform.
            * Note that this behavior cannot be used when multiple-choice is true.
            * See: https://www.w3.org/TR/wai-aria-practices/#kbd_selection_follows_focus
            */
@@ -231,7 +231,7 @@ export const ListboxMixin = dedupeMixin(
       }
 
       // eslint-disable-next-line class-methods-use-this
-      _checkSingleChoiceElements() {}
+      _checkSingleChoiceElements() { }
 
       updated(changedProps) {
         super.updated(changedProps);

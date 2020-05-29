@@ -73,7 +73,7 @@ export const OverlayMixin = dedupeMixin(
        * @overridable method `_defineOverlay`
        * @desc returns an object with default configuration options for your overlay component.
        * This is generally speaking easier to override than _defineOverlay method entirely.
-       * @returns {OverlayController}
+       * @returns {OverlayConfig}
        */
       // eslint-disable-next-line
       _defineOverlayConfig() {

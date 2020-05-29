@@ -36,7 +36,7 @@ async function fruitFixture({ autocomplete, matchMode }) {
     el.matchMode = matchMode;
   }
   await el.updateComplete;
-  return [el, el.formEelements];
+  return [el, el.formElements];
 }
 
 describe('lion-combobox', () => {
@@ -50,6 +50,7 @@ describe('lion-combobox', () => {
       `);
       expect(el._listboxNode).to.exist;
       expect(el._listboxNode).to.be.instanceOf(LionOptions);
+      expect(el.querySelector('[role=listbox]')).to.equal(el._listboxNode);
     });
 
     it('has an LionComboboxInvoker component', async () => {
@@ -61,6 +62,7 @@ describe('lion-combobox', () => {
       `);
       expect(el._comboboxNode).to.exist;
       expect(el._comboboxNode).to.be.instanceOf(LionComboboxInvoker);
+      expect(el.querySelector('[role=combobox]')).to.equal(el._comboboxNode);
     });
   });
 
@@ -390,6 +392,7 @@ describe('lion-combobox', () => {
         `);
         expect(el._listboxNode.getAttribute('aria-multiselectable')).to.equal('true');
       });
+
       it('does not allow "selectionFollowsFocus"', async () => {
         const el = await fixture(html`
           <lion-combobox name="foo" multiple-choice>
@@ -411,7 +414,7 @@ describe('lion-combobox', () => {
       expect(el.matchMode).to.equal('all');
     });
 
-    it('will suggest partial (in the middle of the word) when "all"', async () => {
+    it('will suggest partial matches (in the middle of the word) when set to "all"', async () => {
       const [el] = await fruitFixture();
       mimicUserTyping(el, 'ch');
       expect(getFilteredOptionValues(el)).to.eql([
@@ -422,23 +425,25 @@ describe('lion-combobox', () => {
       ]);
     });
 
-    it('will only suggest beginning matches when "begin"', async () => {
+    it('will only suggest beginning matches when set to "begin"', async () => {
       const [el] = await fruitFixture({ matchMode: 'begin' });
       mimicUserTyping(el, 'ch');
       expect(getFilteredOptionValues(el)).to.eql(['Chard', 'Chicory']);
     });
 
-    it('allows for custom matching functions', async () => {
-      const [el] = await fruitFixture();
-      function onlyExactMatches(option, curValue) {
-        return option.value === curValue;
-      }
-      el.filterOptionCondition = onlyExactMatches;
-      mimicUserTyping(el, 'Chicory');
-      expect(getFilteredOptionValues(el)).to.eql(['Chicory']);
-      mimicUserTyping(el, 'Chicor');
-      expect(getFilteredOptionValues(el)).to.eql([]);
-    });
+    describe('Subclassers', () => {
+      it('allows for custom matching functions', async () => {
+        const [el] = await fruitFixture();
+        function onlyExactMatches(option, curValue) {
+          return option.value === curValue;
+        }
+        el.filterOptionCondition = onlyExactMatches;
+        mimicUserTyping(el, 'Chicory');
+        expect(getFilteredOptionValues(el)).to.eql(['Chicory']);
+        mimicUserTyping(el, 'Chicor');
+        expect(getFilteredOptionValues(el)).to.eql([]);
+      });
+    })
   });
 
   // TODO: move to ListboxMixin tests
@@ -547,7 +552,7 @@ describe('lion-combobox', () => {
   describe('Rotate Navigation', () => {
     it('stops navigation by default at end of option list', async () => {
       const el = await fixture(html`
-        <lion-combobox name="foo" rotate-navigation>
+        <lion-combobox name="foo">
           <lion-option value="Artichoke">Artichoke</lion-option>
           <lion-option value="Bla">Bla</lion-option>
           <lion-option value="Chard">Chard</lion-option>

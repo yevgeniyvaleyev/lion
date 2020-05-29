@@ -122,7 +122,9 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
     return html`
       <div class="input-group__input">
         <slot name="invoker"></slot>
-        <slot name="input"></slot>
+        <div role="dialog">
+          <slot name="input"></slot>
+        </div>
         <slot id="options-outlet"></slot>
       </div>
     `;
@@ -207,9 +209,7 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
 
   // eslint-disable-next-line class-methods-use-this
   _defineOverlayConfig() {
-    return {
-      ...withDropdownConfig(),
-    };
+    return withDropdownConfig();
   }
 
   __setupOverlay() {

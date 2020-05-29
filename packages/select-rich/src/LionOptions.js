@@ -13,6 +13,7 @@ export class LionOptions extends FormRegistrarPortalMixin(LitElement) {
       super.connectedCallback();
     }
     this.setAttribute('role', 'listbox');
+    this.style.display = 'block';
   }
 
   createRenderRoot() {

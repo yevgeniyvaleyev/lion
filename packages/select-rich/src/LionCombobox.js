@@ -14,20 +14,7 @@ import '../lion-combobox-invoker.js';
 export class LionCombobox extends OverlayMixin(LionListbox) {
   static get properties() {
     return {
-      /**
-       * @desc By default, 'list'. When 'both', will automatically autocomplete the input value
-       * with the closest match. When 'none', no filter takes place
-       * @type {'list'|'both'|'none'}
-       */
       autocomplete: String,
-      /**
-       * @desc When typing in the textbox, will by default be set on 'begin',
-       * only matching the beginning part in suggestion list.
-       * => 'a' will match 'apple' from ['apple', 'pear', 'citrus'].
-       * When set to 'all', will match middle of the word as well
-       * => 'a' will match 'apple' and 'pear'
-       * @type {'begin'|'all'}
-       */
       matchMode: {
         type: String,
         attribute: 'match-mode',
@@ -55,7 +42,20 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
 
   constructor() {
     super();
+    /**
+     * @desc When "list", will filter listbox suggestions based on textbox value.
+     * When "both", an inline completion string will be added to the textbox as well.
+     * @type {'list'|'both'|'none'}
+     */
     this.autocomplete = 'both';
+    /**
+     * @desc When typing in the textbox, will by default be set on 'begin',
+     * only matching the beginning part in suggestion list.
+     * => 'a' will match 'apple' from ['apple', 'pear', 'citrus'].
+     * When set to 'all', will match middle of the word as well
+     * => 'a' will match 'apple' and 'pear'
+     * @type {'begin'|'all'}
+     */
     this.matchMode = 'all';
   }
 
@@ -143,12 +143,21 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
 
   /* eslint-disable no-param-reassign, class-methods-use-this */
 
+  /**
+   * @overridable
+   * @param { HTMLElement } option
+   * @param { string } matchingString
+   */
   _onFilterMatch(option, matchingString) {
     const { innerHTML } = option;
     option.__originalInnerHTML = innerHTML;
     option.innerHTML = innerHTML.replace(new RegExp(`(${matchingString})`, 'i'), `<b>$1</b>`);
   }
 
+  /**
+   * @overridable
+   * @param { HTMLElement } option
+   */
   _onFilterUnmatch(option) {
     if (option.__originalInnerHTML) {
       option.innerHTML = option.__originalInnerHTML;
@@ -162,9 +171,9 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
       return;
     }
 
-    const visibleOptions = [];
+    const /** @type { LionOption[] } */ visibleOptions = [];
     let hasAutoFilled = false;
-    const userAdds = prevValue.length < curValue.length;
+    const userIsAddingChars = prevValue.length < curValue.length;
 
     this.formElements.forEach((option, index) => {
       if (option.onFilterUnmatch) {
@@ -177,12 +186,13 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
         visibleOptions.push(option);
         return;
       }
-      const show = this.filterOptionCondition(option, curValue);
+
       // eslint-disable-next-line no-param-reassign
       option.style.display = 'none';
       // eslint-disable-next-line no-param-reassign
       option.disabled = true; // makes it compatible with keyboard interaction methods
 
+      const show = this.filterOptionCondition(option, curValue);
       if (show) {
         visibleOptions.push(option);
         if (option.onFilterMatch) {
@@ -194,7 +204,7 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
       option.removeAttribute('aria-posinset');
       option.removeAttribute('aria-setsize');
       const beginsWith = option.value.toLowerCase().indexOf(curValue.toLowerCase()) === 0;
-      if (beginsWith && !hasAutoFilled && show && userAdds) {
+      if (beginsWith && !hasAutoFilled && show && userIsAddingChars) {
         if (this.autocomplete === 'both') {
           this._comboboxTextNode.value = option.value;
           this._comboboxTextNode.selectionStart = this.__cboxInputValue.length;
@@ -231,9 +241,8 @@ export class LionCombobox extends OverlayMixin(LionListbox) {
   }
 
   /**
-   * @desc When transitoning from navigating listbox to selecting value via enter (focusing textbox),
-   * showing conditions for listbox overlay should be blocked for 1 tick.
-   * This is because textbox has a keyboard event listener, on which it opens
+   * @desc Normally, when textbox gets focus or a char is typed, it opens listbox.
+   * In transition phases (clicking option) we prevent this.
    */
   __blockListShowDuringTransition() {
     this.__blockListboxShow = true;

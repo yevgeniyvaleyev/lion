@@ -6,7 +6,7 @@ describe('lion-options', () => {
   it('should have role="listbox"', async () => {
     const registrationTargetEl = document.createElement('div');
     const el = await fixture(html`
-      <lion-options .registrationTarget=${registrationTargetEl}></lion-options>
+      <lion-options .registrationTarget="${registrationTargetEl}""></lion-options>
     `);
     expect(el.getAttribute('role')).to.equal('listbox');
   });
