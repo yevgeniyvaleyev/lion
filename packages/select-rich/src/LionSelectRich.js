@@ -106,9 +106,9 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
     }
   }
 
-  render() {
+  _groupTwoTemplate() {
     return html`
-      ${this._labelTemplate()} ${this._helpTextTemplate()} ${this._inputGroupTemplate()}
+      ${this._inputGroupTemplate()}
       ${this._feedbackTemplate()}
       <slot name="_overlay-shadow-outlet"></slot>
     `;
@@ -155,30 +155,30 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
   }
 
   __onKeyUp(ev) {
-    if (this.disabled || this.opened) {
-      return;
-    }
+    // if (this.disabled || this.opened) {
+    //   return;
+    // }
 
-    const { key } = ev;
-    switch (key) {
-      case 'ArrowUp':
-        // ev.preventDefault();
-        if (this.interactionMode === 'mac') {
-          this.opened = true;
-        } else {
-          this._handleCheckedIndex(this.__getPreviousEnabledOption(this.checkedIndex));
-        }
-        break;
-      case 'ArrowDown':
-        // ev.preventDefault();
-        if (this.interactionMode === 'mac') {
-          this.opened = true;
-        } else {
-          this._handleCheckedIndex(this.__getNextEnabledOption(this.checkedIndex));
-        }
-        break;
-      /* no default */
-    }
+    // const { key } = ev;
+    // switch (key) {
+    //   case 'ArrowUp':
+    //     // ev.preventDefault();
+    //     if (this.interactionMode === 'mac') {
+    //       this.opened = true;
+    //     } else {
+    //       this._handleCheckedIndex(this.__getPreviousEnabledOption(this.checkedIndex));
+    //     }
+    //     break;
+    //   case 'ArrowDown':
+    //     // ev.preventDefault();
+    //     if (this.interactionMode === 'mac') {
+    //       this.opened = true;
+    //     } else {
+    //       this._handleCheckedIndex(this.__getNextEnabledOption(this.checkedIndex));
+    //     }
+    //     break;
+    //   /* no default */
+    // }
   }
 
   __setupInvokerNode() {
@@ -190,7 +190,7 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
 
   __setupInvokerNodeEventListener() {
     this.__invokerOnClick = () => {
-      if (!this.disabled && !this.readOnly) {
+      if (!this.disabled && !this.readOnly && !this.__blockListShow) {
         this._overlayCtrl.toggle();
       }
     };

@@ -118,6 +118,94 @@ describe('lion-combobox', () => {
       await el.updateComplete;
       expect(el.opened).to.equal(true);
     });
+
+    it('hides (and clears) listbox on [Escape]', async () => {
+      const el = await fixture(html`
+        <lion-combobox name="foo">
+          <lion-option value="Artichoke">Artichoke</lion-option>
+          <lion-option value="Chard">Chard</lion-option>
+          <lion-option value="Chicory">Chicory</lion-option>
+          <lion-option value="Victoria Plum">Victoria Plum</lion-option>
+        </lion-combobox>
+      `);
+      await el.updateComplete;
+
+      // open
+      el._comboboxNode.dispatchEvent(new Event('focusin', { bubbles: true, composed: true }));
+      await el.updateComplete;
+      expect(el.opened).to.equal(true);
+
+      mimicUserTyping(el, 'art');
+      expect(el._comboboxTextNode.value).to.equal('art');
+      el._comboboxTextNode.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(el.opened).to.equal(false);
+      expect(el._comboboxTextNode.value).to.equal('');
+    });
+
+    describe('Accessibility', () => {
+      it('sets "aria-posinset" and "aria-setsize" on visible entries', async () => {
+        const el = await fixture(html`
+          <lion-combobox name="foo" multiple-choice>
+            <lion-option value="Artichoke">Artichoke</lion-option>
+            <lion-option value="Chard">Chard</lion-option>
+            <lion-option value="Chicory">Chicory</lion-option>
+            <lion-option value="Victoria Plum">Victoria Plum</lion-option>
+          </lion-combobox>
+        `);
+        const options = el.formElements;
+        await el.updateComplete;
+        expect(el.opened).to.equal(false);
+
+        el._comboboxNode.dispatchEvent(new Event('focusin', { bubbles: true, composed: true }));
+        await el.updateComplete;
+        expect(el.opened).to.equal(true);
+        mimicUserTyping(el, 'art');
+        await el.updateComplete;
+
+        const visibleOptions = options.filter(o => o.style.display !== 'none');
+        visibleOptions.forEach((o, i) => {
+          expect(o.getAttribute('aria-posinset')).to.equal(`${i + 1}`);
+          expect(o.getAttribute('aria-setsize')).to.equal(`${visibleOptions.length}`);
+        });
+        const hiddenOptions = options.filter(o => o.style.display === 'none');
+        hiddenOptions.forEach((o) => {
+          expect(o.hasAttribute('aria-posinset')).to.equal(false);
+          expect(o.hasAttribute('aria-setsize')).to.equal(false);
+        });
+      });
+
+      it('sets "disabled" on hidden entries', async () => {
+        const el = await fixture(html`
+          <lion-combobox name="foo">
+            <lion-option value="Artichoke">Artichoke</lion-option>
+            <lion-option value="Chard">Chard</lion-option>
+            <lion-option value="Chicory">Chicory</lion-option>
+            <lion-option value="Victoria Plum">Victoria Plum</lion-option>
+          </lion-combobox>
+        `);
+        const options = el.formElements;
+        await el.updateComplete;
+        expect(el.opened).to.equal(false);
+
+        el._comboboxNode.dispatchEvent(new Event('focusin', { bubbles: true, composed: true }));
+        await el.updateComplete;
+        expect(el.opened).to.equal(true);
+        mimicUserTyping(el, 'art');
+        await el.updateComplete;
+
+        const visibleOptions = options.filter(o => o.style.display !== 'none');
+        visibleOptions.forEach((o) => {
+          expect(o.getAttribute('disabled')).to.not.equal(null);
+          expect(o.getAttribute('aria-disabled')).to.equal('true');
+        });
+        const hiddenOptions = options.filter(o => o.style.display === 'none');
+        hiddenOptions.forEach((o) => {
+          expect(o.hasAttribute('disabled')).to.equal(false);
+          expect(o.hasAttribute('aria-disabled')).to.equal(false);
+        });
+      });
+    });
+
   });
 
   // Notice that the LionComboboxInvoker always needs to be used in conjunction with the
@@ -153,6 +241,17 @@ describe('lion-combobox', () => {
           </lion-combobox>
         `);
         expect(el._listboxNode.hasAttribute('tabindex')).to.be.false;
+      });
+
+      it('couples text node to FormControl', async () => {
+        const el = await fixture(html`
+          <lion-combobox name="foo">
+            <lion-option value="10" checked>Item 1</lion-option>
+            <lion-option value="20">Item 2</lion-option>
+          </lion-combobox>
+        `);
+        // _inputNode will get all labelledby/describedby relations
+        expect(el._comboboxTextNode).to.equal(el._inputNode);
       });
     });
   });

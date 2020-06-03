@@ -153,6 +153,10 @@ export const ListboxMixin = dedupeMixin(
         }
       }
 
+      /**
+       * @desc The index of the active descendant
+       * @type {number}
+       */
       get activeIndex() {
         return this.formElements.findIndex(el => el.active === true);
       }
@@ -261,7 +265,7 @@ export const ListboxMixin = dedupeMixin(
        * Overrides FormRegistrar adding to make sure children have specific default states when added
        *
        * @override
-       * @param {*} child
+       * @param {HTMLElement} child
        * @param {Number} indexToInsertAt
        */
       addFormElement(child, indexToInsertAt) {
@@ -334,22 +338,48 @@ export const ListboxMixin = dedupeMixin(
         this.requestUpdate('modelValue');
       }
 
-      __getNextEnabledOption(currentIndex, offset = 1) {
-        for (let i = currentIndex + offset; i < this.formElements.length; i += 1) {
+      __getNextOption(currentIndex, offset) {
+        const until = i => (offset === 1) ? (i < this.formElements.length) : i >= 0;
+
+        for (let i = currentIndex + offset; until(i); i += offset) {
           if (this.formElements[i] && !this.formElements[i].disabled) {
             return i;
+          }
+        }
+
+        if (this.rotateKeyboardNavigation) {
+          const startIndex = (offset === -1) ? (this.formElements.length - 1) : 0;
+          for (let i = startIndex; until(i); i += 1) {
+            if (this.formElements[i] && !this.formElements[i].disabled) {
+              return i;
+            }
           }
         }
         return currentIndex;
       }
 
+
+      __getNextEnabledOption(currentIndex, offset = 1) {
+        return this.__getNextOption(currentIndex, offset);
+      }
+
       __getPreviousEnabledOption(currentIndex, offset = -1) {
-        for (let i = currentIndex + offset; i >= 0; i -= 1) {
-          if (this.formElements[i] && !this.formElements[i].disabled) {
-            return i;
-          }
-        }
-        return currentIndex;
+        return this.__getNextOption(currentIndex, offset);
+      }
+
+      /**
+       * @desc Normally, when textbox gets focus or a char is typed, it opens listbox.
+       * In transition phases (like clicking option) we prevent this.
+       */
+      __blockListShowDuringTransition() {
+        this.__blockListShow = true;
+        // We need this timeout to make sure click handler triggered by keyup (space/enter) of
+        // button has been executed.
+        // TODO: alternative would be to let the 'checking' party 'release' this boolean
+        // Or: call 'stopPropagation' on keyup of keys that have been handled in keydown
+        setTimeout(() => {
+          this.__blockListShow = false;
+        }, 200);
       }
 
       /**
@@ -366,10 +396,83 @@ export const ListboxMixin = dedupeMixin(
 
         const { key } = ev;
 
+        // switch (key) {
+        //   case 'Escape':
+        //     ev.preventDefault();
+        //     this.opened = false;
+        //     break;
+        //   case 'Enter':
+        //   case ' ':
+        //     ev.preventDefault();
+        //     if (this.interactionMode === 'mac' || this.multipleChoice) {
+        //       this._handleCheckedIndex(this.activeIndex);
+        //     }
+        //     if (!this.multipleChoice) {
+        //       this.opened = false;
+        //     }
+        //     break;
+        //   case 'ArrowUp':
+        //     console.log('ArrowUp');
+        //     if (this.orientation === 'vertical') {
+        //       this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
+        //     }
+        //     break;
+        //   case 'ArrowLeft':
+        //     // ev.preventDefault();
+        //     if (this.orientation === 'horizontal') {
+        //       this.activeIndex = this.__getPreviousEnabledOption(this.activeIndex);
+        //     }
+        //     break;
+        //   case 'ArrowDown':
+        //     if (this.orientation === 'vertical') {
+        //       this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
+        //     }
+        //     break;
+        //   case 'ArrowRight':
+        //     if (this.orientation === 'horizontal') {
+        //       this.activeIndex = this.__getNextEnabledOption(this.activeIndex);
+        //     }
+        //     break;
+        //   case 'Home':
+        //     // ev.preventDefault();
+        //     this.activeIndex = this.__getNextEnabledOption(0, 0);
+        //     break;
+        //   case 'End':
+        //     // ev.preventDefault();
+        //     this.activeIndex = this.__getPreviousEnabledOption(this.formElements.length - 1, 0);
+        //     break;
+        //   /* no default */
+        // }
+
+        // const keys = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
+        // if (
+        //   keys.includes(key) &&
+        //   this.interactionMode === 'windows/linux' &&
+        //   !this.multipleChoice
+        // ) {
+        //   this._handleCheckedIndex(this.activeIndex);
+        // }
+      }
+
+      __listboxOnKeyDown(ev) {
+        console.log('__listboxOnKeyDown');
+        if (this.disabled) {
+          return;
+        }
+
+        const { key } = ev;
+
         switch (key) {
+          case 'Tab':
+            // Tab can only be caught in keydown
+            // ev.preventDefault();
+            this.opened = false;
+            break;
+          /* no default */
           case 'Escape':
             ev.preventDefault();
             this.opened = false;
+            this.__blockListShowDuringTransition();
             break;
           case 'Enter':
           case ' ':
@@ -379,6 +482,7 @@ export const ListboxMixin = dedupeMixin(
             }
             if (!this.multipleChoice) {
               this.opened = false;
+              this.__blockListShowDuringTransition();
             }
             break;
           case 'ArrowUp':
@@ -420,23 +524,6 @@ export const ListboxMixin = dedupeMixin(
           !this.multipleChoice
         ) {
           this._handleCheckedIndex(this.activeIndex);
-        }
-      }
-
-      __listboxOnKeyDown(ev) {
-        if (this.disabled) {
-          return;
-        }
-
-        const { key } = ev;
-
-        switch (key) {
-          case 'Tab':
-            // Tab can only be caught in keydown
-            // ev.preventDefault();
-            this.opened = false;
-            break;
-          /* no default */
         }
       }
 

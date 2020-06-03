@@ -6,6 +6,9 @@ import '../lion-combobox.js';
 
 import './overflow-previews.js';
 
+import './md-combobox/MdCombobox.js';
+import './md-combobox/MdInput.js';
+
 <Meta title="Forms/Combobox" parameters={{ component: 'lion-combobox' }} />
 
 # Combobox
@@ -15,7 +18,9 @@ A combobox is a widget made up of the combination of two distinct elements:
 - a single-line textbox
 - an associated pop-up element for helping users set the value of the textbox
 
-The popup may be a listbox, grid, tree, or dialog. Many implementations also include a third optional element -- a graphical button adjacent to the textbox, indicating the availability of the popup. Activating the button displays the popup if suggestions are available.
+The popup may be a listbox, grid, tree, or dialog. Many implementations also include a
+third optional element -- a graphical button adjacent to the textbox, indicating the
+availability of the popup. Activating the button displays the popup if suggestions are available.
 
 > From https://www.w3.org/TR/wai-aria-practices/#combobox
 
@@ -110,6 +115,36 @@ So 'ch' will both match 'Chard' and 'Artichoke'.
           `,
         )}
       </lion-combobox>
+    `}
+  </Story>
+</Preview>
+
+
+## Material
+
+
+<Preview>
+  <Story name="Material">
+    {html`
+      <md-combobox name="combo" label="Material">
+        <md-option value="Apple">Apple</md-option>
+        <md-option value="Artichoke">Artichoke</md-option>
+        <md-option value="Asparagus">Asparagus</md-option>
+        <md-option value="Banana">Banana</md-option>
+        <md-option value="Beets">Beets</md-option>
+      </md-combobox>
+    `}
+  </Story>
+</Preview>
+
+
+## Material Input
+
+
+<Preview>
+  <Story name="Material input">
+    {html`
+      <md-input name="gerrit" label="Gerrit" help-text="Help, text!"></md-input>
     `}
   </Story>
 </Preview>

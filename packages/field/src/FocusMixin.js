@@ -63,9 +63,12 @@ export const FocusMixin = dedupeMixin(
       __registerEventsForFocusMixin() {
         // focus
         this.__redispatchFocus = ev => {
+          console.log('__redispatchFocus');
+
           ev.stopPropagation();
           this.dispatchEvent(new Event('focus'));
         };
+        console.log('this._inputNode', this._inputNode);
         this._inputNode.addEventListener('focus', this.__redispatchFocus);
 
         // blur

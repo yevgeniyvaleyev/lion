@@ -6,9 +6,12 @@ import '../lion-listbox.js';
 
 <Meta title="Forms/Listbox" parameters={{ component: 'lion-listbox' }} />
 
+
 # Listbox
 
-A listbox widget presents a list of options and allows a user to select one or more of them. A listbox that allows a single option to be chosen is a single-select listbox; one that allows multiple options to be selected is a multi-select listbox.
+A listbox widget presents a list of options and allows a user to select one or more of them.
+A listbox that allows a single option to be chosen is a single-select listbox; one that allows
+multiple options to be selected is a multi-select listbox.
 
 > From https://www.w3.org/TR/wai-aria-practices/#Listbox
 
@@ -16,11 +19,11 @@ A listbox widget presents a list of options and allows a user to select one or m
   <Story name="Listbox">
     {html`
       <lion-listbox name="listbox" label="Default">
-        ${listboxData.slice(0, 5).map(
-          entry => html`
-            <lion-option value="${entry}">${entry}</lion-option>
-          `,
-        )}
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
       </lion-listbox>
     `}
   </Story>
@@ -39,11 +42,16 @@ This will:
   <Story name="Multiple choice">
     {html`
       <lion-listbox name="combo" label="Multiple" multiple-choice>
-        ${listboxData.slice(0, 10).map(
-          entry => html`
-            <lion-option value="${entry}">${entry}</lion-option>
-          `,
-        )}
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
+        <lion-option value="Bell pepper">Bell pepper</lion-option>
+        <lion-option value="Broccoli">Broccoli</lion-option>
+        <lion-option value="Brussels sprout">Brussels sprout</lion-option>
+        <lion-option value="Cabbage">Cabbage</lion-option>
+        <lion-option value="Carrot">Carrot</lion-option>
       </lion-listbox>
     `}
   </Story>
@@ -59,11 +67,16 @@ By default, `orientation="horizontal"` is set, which enables up and down arrow k
   <Story name="Orientation">
     {html`
       <lion-listbox name="combo" label="Orientation horizontal" orientation="horizontal">
-        ${listboxData.slice(0, 10).map(
-          entry => html`
-            <lion-option value="${entry}" style="display:inline-block;">${entry}</lion-option>
-          `,
-        )}
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
+        <lion-option value="Bell pepper">Bell pepper</lion-option>
+        <lion-option value="Broccoli">Broccoli</lion-option>
+        <lion-option value="Brussels sprout">Brussels sprout</lion-option>
+        <lion-option value="Cabbage">Cabbage</lion-option>
+        <lion-option value="Carrot">Carrot</lion-option>
       </lion-listbox>
     `}
   </Story>
@@ -80,11 +93,66 @@ With `multiple-choice` flag configured, multiple options can be checked.
         orientation="horizontal"
         multiple-choice
       >
-        ${listboxData.slice(0, 10).map(
-          entry => html`
-            <lion-option value="${entry}" style="display:inline-block;">${entry}</lion-option>
-          `,
-        )}
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
+        <lion-option value="Bell pepper">Bell pepper</lion-option>
+        <lion-option value="Broccoli">Broccoli</lion-option>
+        <lion-option value="Brussels sprout">Brussels sprout</lion-option>
+        <lion-option value="Cabbage">Cabbage</lion-option>
+        <lion-option value="Carrot">Carrot</lion-option>
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>
+
+
+## Selection-follows-focus
+
+When true, will synchronize activedescendant and selected element on arrow key navigation.
+This behavior can usually be seen in `<select>` on the Windows platform.
+Note that this behavior cannot be used when multiple-choice is true.
+See [wai aria spec](https://www.w3.org/TR/wai-aria-practices/#kbd_selection_follows_focus)
+
+<Preview>
+  <Story name="selectionFollowsFocus">
+    {html`
+      <lion-listbox name="combo" label="Selection follows focus" selection-follows-focus>
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
+        <lion-option value="Bell pepper">Bell pepper</lion-option>
+        <lion-option value="Broccoli">Broccoli</lion-option>
+        <lion-option value="Brussels sprout">Brussels sprout</lion-option>
+        <lion-option value="Cabbage">Cabbage</lion-option>
+        <lion-option value="Carrot">Carrot</lion-option>
+      </lion-listbox>
+    `}
+  </Story>
+</Preview>
+
+## Rotate keyboard navigation
+
+Will give first option active state when navigated to the next option from last option.
+
+<Preview>
+  <Story name="rotateKeyboardNavigation">
+    {html`
+      <lion-listbox name="combo" label="Rotate keyboard navigation" rotate-keyboard-navigation>
+        <lion-option value="Apple">Apple</lion-option>
+        <lion-option value="Artichoke">Artichoke</lion-option>
+        <lion-option value="Asparagus">Asparagus</lion-option>
+        <lion-option value="Banana">Banana</lion-option>
+        <lion-option value="Beets">Beets</lion-option>
+        <lion-option value="Bell pepper">Bell pepper</lion-option>
+        <lion-option value="Broccoli">Broccoli</lion-option>
+        <lion-option value="Brussels sprout">Brussels sprout</lion-option>
+        <lion-option value="Cabbage">Cabbage</lion-option>
+        <lion-option value="Carrot">Carrot</lion-option>
       </lion-listbox>
     `}
   </Story>
