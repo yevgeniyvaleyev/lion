@@ -7,6 +7,8 @@ import '../lion-combobox.js';
 import './overflow-previews.js';
 
 import './md-combobox/MdCombobox.js';
+import './google-combobox/GoogleCombobox.js';
+
 import './md-combobox/MdInput.js';
 
 <Meta title="Forms/Combobox" parameters={{ component: 'lion-combobox' }} />
@@ -133,6 +135,24 @@ So 'ch' will both match 'Chard' and 'Artichoke'.
         <md-option value="Banana">Banana</md-option>
         <md-option value="Beets">Beets</md-option>
       </md-combobox>
+    `}
+  </Story>
+</Preview>
+
+
+## Google Search
+
+
+<Preview>
+  <Story name="GoogleSearch">
+    {html`
+      <google-combobox name="combo" label="Google Search">
+        <google-option value="Apple">Apple</google-option>
+        <google-option value="Artichoke">Artichoke</google-option>
+        <google-option value="Asparagus">Asparagus</google-option>
+        <google-option value="Banana">Banana</google-option>
+        <google-option value="Beets">Beets</google-option>
+      </google-combobox>
     `}
   </Story>
 </Preview>

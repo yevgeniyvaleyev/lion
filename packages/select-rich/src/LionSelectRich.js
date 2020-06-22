@@ -181,6 +181,12 @@ export class LionSelectRich extends OverlayMixin(LionListbox) {
     // }
   }
 
+  _focusInputOnLabelClick() {
+    this._labelNode.addEventListener('click', () => {
+      this._invokerNode.focus();
+    });
+  }
+
   __setupInvokerNode() {
     this._invokerNode.id = `invoker-${this._inputId}`;
     this._invokerNode.setAttribute('aria-haspopup', 'listbox');
