@@ -183,6 +183,18 @@ export const FormControlMixin = dedupeMixin(
           this.addToAriaDescribedBy(_feedbackNode, { idPrefix: 'feedback' });
         }
         this._enhanceLightDomA11yForAdditionalSlots();
+        this._focusInputOnLabelClick();
+      }
+
+      _focusInputOnLabelClick() {
+        const platformInputs = ['INPUT', 'TEXTAREA', 'SELECT'];
+        if (platformInputs.includes(this._inputNode.tagName)) {
+          // We rely on the platform via: `<label for="my-input"><input id="my-input">`
+          return;
+        }
+        this._labelNode.addEventListener('click', () => {
+          this._inputNode.focus();
+        });
       }
 
       /**
