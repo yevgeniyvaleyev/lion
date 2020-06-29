@@ -8,5 +8,6 @@ export const withModalDialogConfig = () => ({
   preventsScroll: true,
   trapsKeyboardFocus: true,
   hidesOnEsc: true,
+  hidesOnOutsideEsc: true,
   handlesAccessibility: true,
 });

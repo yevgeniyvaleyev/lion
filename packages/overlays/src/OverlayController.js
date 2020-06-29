@@ -385,11 +385,13 @@ export class OverlayController {
   }
 
   __storeOriginalAttrs(node, attrs) {
-    const attrMap = {};
-    attrs.forEach(attrName => {
-      attrMap[attrName] = node.getAttribute(attrName);
-    });
-    this.__originalAttrs.set(node, attrMap);
+    if (node) {
+      const attrMap = {};
+      attrs.forEach(attrName => {
+        attrMap[attrName] = node.getAttribute(attrName);
+      });
+      this.__originalAttrs.set(node, attrMap);
+    }
   }
 
   __restorOriginalAttrs() {
@@ -426,13 +428,18 @@ export class OverlayController {
     const event = new CustomEvent('before-show', { cancelable: true });
     this.dispatchEvent(event);
     if (!event.defaultPrevented) {
-      this._contentWrapperNode.style.display = '';
+      // this._contentWrapperNode.style.display = '';
       this._keepBodySize({ phase: 'before-show' });
       await this._handleFeatures({ phase: 'show' });
       this._keepBodySize({ phase: 'show' });
       await this._handlePosition({ phase: 'show' });
       this.elementToFocusAfterHide = elementToFocusAfterHide;
       this.dispatchEvent(new Event('show'));
+      await this.transitionShow({
+        backdropNode: this.backdropNode,
+        contentNode: this.contentNode,
+        contentWrapperNode: this._contentWrapperNode,
+      });
     }
   }
 
@@ -517,8 +524,12 @@ export class OverlayController {
     const event = new CustomEvent('before-hide', { cancelable: true });
     this.dispatchEvent(event);
     if (!event.defaultPrevented) {
-      // await this.transitionHide({ backdropNode: this.backdropNode, conentNode: this.contentNode });
-      this._contentWrapperNode.style.display = 'none';
+      await this.transitionHide({
+        backdropNode: this.backdropNode,
+        contentNode: this.contentNode,
+        contentWrapperNode: this._contentWrapperNode,
+      });
+      // this._contentWrapperNode.style.display = 'none';
       this._handleFeatures({ phase: 'hide' });
       this._keepBodySize({ phase: 'hide' });
       this.dispatchEvent(new Event('hide'));
