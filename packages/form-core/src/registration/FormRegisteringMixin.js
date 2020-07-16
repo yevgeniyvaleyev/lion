@@ -1,5 +1,13 @@
 import { dedupeMixin } from '@lion/core';
 
+function findClosestShadowRoot(startEl) {
+  let el = startEl;
+  do {
+    el = el.parentNode;
+  } while (el && !el.shadowRoot);
+  return el;
+}
+
 /**
  * #FormRegisteringMixin:
  *
@@ -34,15 +42,7 @@ export const FormRegisteringMixin = dedupeMixin(
       }
 
       _dispatchRegistration() {
-        let commentNode;
-        if (window.ShadyDOM) {
-          commentNode = document.createComment(' Form Registration Dispatcher for IE11 ');
-          const { appendChild } = window.ShadyDOM.nativeMethods;
-          appendChild.call(this.parentNode, commentNode);
-          this.__dispatcher = commentNode;
-        }
-
-        this.__dispatcher.dispatchEvent(
+        this.dispatchEvent(
           new CustomEvent('form-element-register', {
             detail: { element: this },
             bubbles: true,
@@ -50,9 +50,20 @@ export const FormRegisteringMixin = dedupeMixin(
         );
 
         if (window.ShadyDOM) {
-          const { removeChild } = window.ShadyDOM.nativeMethods;
-          removeChild.call(commentNode.parentNode, commentNode);
-          this.__dispatcher = this;
+          const commentNode = document.createComment(' Form Registration Dispatcher for IE11 ');
+          const { appendChild } = window.ShadyDOM.nativeMethods;
+          const parentShadowRoot = findClosestShadowRoot(this);
+          if (parentShadowRoot) {
+            appendChild.call(parentShadowRoot, commentNode);
+          } else {
+            appendChild.call(this.parentNode, commentNode);
+          }
+          commentNode.dispatchEvent(
+            new CustomEvent('form-element-register', {
+              detail: { element: this },
+              bubbles: true,
+            }),
+          );
         }
       }
 

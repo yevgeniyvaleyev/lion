@@ -187,9 +187,7 @@ describe('<lion-fieldset>', () => {
         <${tag} name="newfieldset">${inputSlots}</${tag}>
       </${tag}>
     `);
-    await el.registrationReady;
     const newFieldset = el.querySelector('lion-fieldset');
-    await newFieldset.registrationReady;
     el.formElements.lastName.modelValue = 'Bar';
     newFieldset.formElements['hobbies[]'][0].modelValue = { checked: true, value: 'chess' };
     newFieldset.formElements['hobbies[]'][1].modelValue = { checked: false, value: 'football' };
@@ -250,10 +248,6 @@ describe('<lion-fieldset>', () => {
         </${tag}>
       </${tag}>
     `);
-    await el.registrationReady;
-    const newFieldset = el.querySelector('lion-fieldset');
-    await newFieldset.registrationReady;
-
     expect(el.modelValue).to.deep.equal({
       b: 'x',
       newFieldset: {
@@ -321,7 +315,6 @@ describe('<lion-fieldset>', () => {
       </${tag}>
     `);
 
-    await el.registrationReady;
     await el.updateComplete;
     expect(el.modelValue).to.eql(initialModelValue);
   });
@@ -336,7 +329,6 @@ describe('<lion-fieldset>', () => {
       </${tag}>
     `);
 
-    await el.registrationReady;
     await el.updateComplete;
     expect(el.modelValue).to.eql(initialSerializedValue);
   });
@@ -928,7 +920,6 @@ describe('<lion-fieldset>', () => {
           <${childTag} name="color2"></${childTag}>
         </${tag}>
       `);
-      await el.registrationReady;
       expect(el.hasFeedbackFor).to.deep.equal(['error']);
       expect(el.validationStates.error.ColorContainsA).to.be.true;
       expect(el.formElements.color.hasFeedbackFor).to.deep.equal([]);

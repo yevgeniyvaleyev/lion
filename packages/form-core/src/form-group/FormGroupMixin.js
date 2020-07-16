@@ -270,19 +270,12 @@ export const FormGroupMixin = dedupeMixin(
       }
 
       async _setValueForAllFormElements(property, value) {
-        if (!this.__readyForRegistration) {
-          await this.registrationReady;
-        }
         this.formElements.forEach(el => {
           el[property] = value; // eslint-disable-line no-param-reassign
         });
       }
 
       async _setValueMapForAllFormElements(property, values) {
-        if (!this.__readyForRegistration) {
-          await this.registrationReady;
-        }
-
         if (values && typeof values === 'object') {
           Object.keys(values).forEach(name => {
             if (Array.isArray(this.formElements[name])) {

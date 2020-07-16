@@ -44,6 +44,11 @@ export const FormRegistrarMixin = dedupeMixin(
         this.addEventListener('form-element-register', this._onRequestToAddFormElement);
       }
 
+      firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
+        this.__foo = true;
+      }
+
       isRegisteredFormElement(el) {
         return this.formElements.some(exitingEl => exitingEl === el);
       }

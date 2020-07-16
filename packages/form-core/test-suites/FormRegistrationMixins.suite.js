@@ -42,6 +42,17 @@ export const runRegistrationSuite = customConfig => {
       expect(el.formElements.length).to.equal(1);
     });
 
+    it('can register a formElement with arbitrary dom tree in between registrar and registering', async () => {
+      const el = await fixture(html`
+        <${parentTag}>
+          <div>
+            <${childTag}></${childTag}>
+          </div>
+        </${parentTag}>
+      `);
+      expect(el.formElements.length).to.equal(1);
+    });
+
     it('supports nested registration parents', async () => {
       const el = await fixture(html`
         <${parentTag}>
@@ -86,7 +97,6 @@ export const runRegistrationSuite = customConfig => {
       const newField = await fixture(html`
         <${childTag}></${childTag}>
       `);
-
       expect(el.formElements.length).to.equal(1);
 
       el.appendChild(newField);
@@ -109,10 +119,11 @@ export const runRegistrationSuite = customConfig => {
       `);
       newField.myProp = 'test';
 
-      el.children[1].insertAdjacentElement('beforebegin', newField);
+      el.insertBefore(newField, el.children[1]);
 
       expect(el.formElements.length).to.equal(4);
       expect(el.children[1].myProp).to.equal('test');
+      expect(el.formElements[1].myProp).to.equal('test');
     });
 
     describe('FormRegistrarPortalMixin', () => {

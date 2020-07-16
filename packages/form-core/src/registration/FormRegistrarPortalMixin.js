@@ -20,11 +20,6 @@ export const FormRegistrarPortalMixin = dedupeMixin(
         super();
         this.formElements = [];
         this.registrationTarget = undefined;
-        this.__hasBeenRendered = false;
-        this.__readyForRegistration = false;
-        this.registrationReady = new Promise(resolve => {
-          this.__resolveRegistrationReady = resolve;
-        });
       }
 
       connectedCallback() {
@@ -55,14 +50,6 @@ export const FormRegistrarPortalMixin = dedupeMixin(
           'form-element-register',
           this.__redispatchEventForFormRegistrarPortalMixin,
         );
-      }
-
-      firstUpdated(changedProperties) {
-        this.__checkRegistrationTarget();
-        super.firstUpdated(changedProperties);
-        this.__resolveRegistrationReady();
-        this.__readyForRegistration = true;
-        this.__hasBeenRendered = true;
       }
 
       __checkRegistrationTarget() {

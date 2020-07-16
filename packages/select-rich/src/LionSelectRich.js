@@ -7,7 +7,6 @@ import {
 } from '@lion/form-core';
 import { css, html, LitElement, ScopedElementsMixin, SlotMixin } from '@lion/core';
 
-import { formRegistrarManager } from '@lion/form-core/src/registration/formRegistrarManager.js';
 import { OverlayMixin, withDropdownConfig } from '@lion/overlays';
 import './differentKeyNamesShimIE.js';
 import { LionSelectInvoker } from './LionSelectInvoker.js';
@@ -218,12 +217,13 @@ export class LionSelectRich extends ScopedElementsMixin(
     this.__setupEventListeners();
     this._listboxNode.registrationTarget = this;
 
-    formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
-      // Now that we have rendered + registered our listbox, try setting the user defined modelValue again
-      if (this.__cachedUserSetModelValue) {
-        this.modelValue = this.__cachedUserSetModelValue;
-      }
-    });
+    // TODO: find a solution when to use the initially provided user value
+    // formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
+    //   // Now that we have rendered + registered our listbox, try setting the user defined modelValue again
+    //   if (this.__cachedUserSetModelValue) {
+    //     this.modelValue = this.__cachedUserSetModelValue;
+    //   }
+    // });
 
     this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
     this.__toggleInvokerDisabled();

@@ -129,11 +129,7 @@ export const ChoiceGroupMixin = dedupeMixin(
         return this.formElements.filter(el => el.checked && !el.disabled);
       }
 
-      async _setCheckedElements(value, check) {
-        if (!this.__readyForRegistration) {
-          await this.registrationReady;
-        }
-
+      _setCheckedElements(value, check) {
         for (let i = 0; i < this.formElements.length; i += 1) {
           if (this.multipleChoice) {
             this.formElements[i].checked = value.includes(this.formElements[i].value);
