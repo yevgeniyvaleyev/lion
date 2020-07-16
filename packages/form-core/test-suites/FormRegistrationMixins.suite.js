@@ -1,8 +1,6 @@
 import { LitElement } from '@lion/core';
 import { defineCE, expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import sinon from 'sinon';
 import { FormRegisteringMixin } from '../src/registration/FormRegisteringMixin.js';
-import { formRegistrarManager } from '../src/registration/formRegistrarManager.js';
 import { FormRegistrarMixin } from '../src/registration/FormRegistrarMixin.js';
 import { FormRegistrarPortalMixin } from '../src/registration/FormRegistrarPortalMixin.js';
 
@@ -41,7 +39,6 @@ export const runRegistrationSuite = customConfig => {
           <${childTag}></${childTag}>
         </${parentTag}>
       `);
-      await el.registrationReady;
       expect(el.formElements.length).to.equal(1);
     });
 
@@ -54,31 +51,8 @@ export const runRegistrationSuite = customConfig => {
           </${parentTag}>
         </${parentTag}>
       `);
-      await el.registrationReady;
       expect(el.formElements.length).to.equal(1);
       expect(el.querySelector(cfg.parentTagString).formElements.length).to.equal(2);
-    });
-
-    it('forgets disconnected registrars', async () => {
-      const el = await fixture(html`
-        <${parentTag}>
-          <${parentTag}>
-            <${childTag}</${childTag}
-          </${parentTag}>
-        </${parentTag}>
-      `);
-
-      const secondRegistrar = await fixture(html`
-        <${parentTag}>
-          <${childTag}</${childTag}
-        </${parentTag}>
-      `);
-
-      el.appendChild(secondRegistrar);
-      expect(formRegistrarManager.__elements.length).to.equal(3);
-
-      el.removeChild(secondRegistrar);
-      expect(formRegistrarManager.__elements.length).to.equal(2);
     });
 
     it('works for components that have a delayed render', async () => {
@@ -100,7 +74,6 @@ export const runRegistrationSuite = customConfig => {
           <${childTag}></${childTag}>
         </${tagWrapper}>
       `);
-      await el.registrationReady;
       expect(el.formElements.length).to.equal(1);
     });
 
@@ -221,21 +194,6 @@ export const runRegistrationSuite = customConfig => {
         expect(el.formElements[5]).dom.to.equal(anotherField);
       });
 
-      // find a proper way to do this on polyfilled browsers
-      it.skip('fires event "form-element-register" with the child as ev.target', async () => {
-        const registerSpy = sinon.spy();
-        const el = await fixture(
-          html`<${parentTag} @form-element-register=${registerSpy}></${parentTag}>`,
-        );
-        const portal = await fixture(html`
-          <${portalTag} .registrationTarget=${el}>
-            <${childTag}></${childTag}>
-          </${portalTag}>
-        `);
-        const childEl = portal.children[0];
-        expect(registerSpy.args[2][0].target.tagName).to.equal(childEl.tagName);
-      });
-
       it('keeps working if moving the portal itself', async () => {
         const el = await fixture(html`<${parentTag}></${parentTag}>`);
         const portal = await fixture(html`
@@ -280,7 +238,6 @@ export const runRegistrationSuite = customConfig => {
           </${delayedPortalTag}>
         `);
 
-        await el.registrationReady;
         expect(el.formElements.length).to.equal(1);
       });
     });

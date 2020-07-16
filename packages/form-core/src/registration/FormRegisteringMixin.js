@@ -1,5 +1,4 @@
 import { dedupeMixin } from '@lion/core';
-import { formRegistrarManager } from './formRegistrarManager.js';
 
 /**
  * #FormRegisteringMixin:
@@ -16,13 +15,15 @@ export const FormRegisteringMixin = dedupeMixin(
       constructor() {
         super();
         this.__boundDispatchRegistration = this._dispatchRegistration.bind(this);
+        this.__dispatcher = this;
       }
 
       connectedCallback() {
         if (super.connectedCallback) {
           super.connectedCallback();
         }
-        this.__setupRegistrationHook();
+
+        this._dispatchRegistration();
       }
 
       disconnectedCallback() {
@@ -32,28 +33,27 @@ export const FormRegisteringMixin = dedupeMixin(
         this._unregisterFormElement();
       }
 
-      __setupRegistrationHook() {
-        if (formRegistrarManager.ready) {
-          this._dispatchRegistration();
-        } else {
-          formRegistrarManager.addEventListener(
-            'all-forms-open-for-registration',
-            this.__boundDispatchRegistration,
-          );
-        }
-      }
-
       _dispatchRegistration() {
-        this.dispatchEvent(
+        let commentNode;
+        if (window.ShadyDOM) {
+          commentNode = document.createComment(' Form Registration Dispatcher for IE11 ');
+          const { appendChild } = window.ShadyDOM.nativeMethods;
+          appendChild.call(this.parentNode, commentNode);
+          this.__dispatcher = commentNode;
+        }
+
+        this.__dispatcher.dispatchEvent(
           new CustomEvent('form-element-register', {
             detail: { element: this },
             bubbles: true,
           }),
         );
-        formRegistrarManager.removeEventListener(
-          'all-forms-open-for-registration',
-          this.__boundDispatchRegistration,
-        );
+
+        if (window.ShadyDOM) {
+          const { removeChild } = window.ShadyDOM.nativeMethods;
+          removeChild.call(commentNode.parentNode, commentNode);
+          this.__dispatcher = this;
+        }
       }
 
       _unregisterFormElement() {
