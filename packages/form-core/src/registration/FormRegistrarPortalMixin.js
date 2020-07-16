@@ -1,5 +1,4 @@
 import { dedupeMixin } from '@lion/core';
-import { formRegistrarManager } from './formRegistrarManager.js';
 
 /**
  * This allows to register fields within a form even though they are not within the same dom tree.
@@ -33,11 +32,6 @@ export const FormRegistrarPortalMixin = dedupeMixin(
           super.connectedCallback();
         }
 
-        formRegistrarManager.add(this);
-        if (this.__hasBeenRendered) {
-          formRegistrarManager.becomesReady();
-        }
-
         this.__redispatchEventForFormRegistrarPortalMixin = ev => {
           ev.stopPropagation();
           this.registrationTarget.dispatchEvent(
@@ -57,7 +51,6 @@ export const FormRegistrarPortalMixin = dedupeMixin(
         if (super.disconnectedCallback) {
           super.disconnectedCallback();
         }
-        formRegistrarManager.remove(this);
         this.removeEventListener(
           'form-element-register',
           this.__redispatchEventForFormRegistrarPortalMixin,
@@ -69,7 +62,6 @@ export const FormRegistrarPortalMixin = dedupeMixin(
         super.firstUpdated(changedProperties);
         this.__resolveRegistrationReady();
         this.__readyForRegistration = true;
-        formRegistrarManager.becomesReady(this);
         this.__hasBeenRendered = true;
       }
 

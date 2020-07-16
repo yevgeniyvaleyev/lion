@@ -10,7 +10,7 @@ export const runRegistrationSuite = customConfig => {
     ...customConfig,
   };
 
-  describe('FormRegistrationMixins', () => {
+  describe(`FormRegistrationMixins ${cfg.suffix}`, () => {
     let parentTag;
     let childTag;
     let portalTag;
