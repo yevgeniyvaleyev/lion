@@ -1,9 +1,8 @@
 import { html, LitElement } from '@lion/core';
-import { formFixture as fixture } from '@lion/form-core/test-helpers.js';
 import '@lion/fieldset/lion-fieldset.js';
 import { LionInput } from '@lion/input';
 import { FormGroupMixin, Required } from '@lion/form-core';
-import { expect } from '@open-wc/testing';
+import { expect, fixture } from '@open-wc/testing';
 import { ChoiceGroupMixin } from '../../src/choice-group/ChoiceGroupMixin.js';
 import { ChoiceInputMixin } from '../../src/choice-group/ChoiceInputMixin.js';
 

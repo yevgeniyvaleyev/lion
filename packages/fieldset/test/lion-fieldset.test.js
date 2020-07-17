@@ -1,6 +1,5 @@
 import { LionField, IsNumber, Validator } from '@lion/form-core';
 import '@lion/form-core/lion-field.js';
-import { formFixture as fixture } from '@lion/form-core/test-helpers.js';
 import { localizeTearDown } from '@lion/localize/test-helpers.js';
 import {
   defineCE,
@@ -10,6 +9,7 @@ import {
   nextFrame,
   triggerFocusFor,
   unsafeStatic,
+  fixture,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import '../lion-fieldset.js';

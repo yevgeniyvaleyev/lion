@@ -1,7 +1,6 @@
-import { formFixture as fixture } from '@lion/form-core/test-helpers.js';
 import '@lion/fieldset/lion-fieldset.js';
 import '@lion/input/lion-input.js';
-import { expect, html } from '@open-wc/testing';
+import { expect, html, fixture } from '@open-wc/testing';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sinon from 'sinon';
 

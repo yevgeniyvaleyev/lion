@@ -26,7 +26,7 @@
     "storybook:build:start": "es-dev-server --root-dir storybook-static --open",
     "test": "run-p test:browser test:node",
     "test:browser": "wtr packages/**/*/test/**/*.test.js --coverage",
-    "test:browser:watch": "wtr packages/form-core/test/**/*.test.js --watch",
+    "test:browser:watch": "wtr packages/**/*/test/**/*.test.js --watch",
     "test:node": "lerna run test:node"
   },
   "devDependencies": {

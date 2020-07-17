@@ -18,44 +18,27 @@ export const FormRegistrarPortalMixin = dedupeMixin(
     class FormRegistrarPortalMixin extends superclass {
       constructor() {
         super();
-        this.formElements = [];
         this.registrationTarget = undefined;
-      }
-
-      connectedCallback() {
-        if (super.connectedCallback) {
-          super.connectedCallback();
-        }
-
-        this.__redispatchEventForFormRegistrarPortalMixin = ev => {
-          ev.stopPropagation();
-          this.registrationTarget.dispatchEvent(
-            new CustomEvent('form-element-register', {
-              detail: { element: ev.detail.element },
-              bubbles: true,
-            }),
-          );
-        };
+        this.__redispatchEventForFormRegistrarPortalMixin = this.__redispatchEventForFormRegistrarPortalMixin.bind(
+          this,
+        );
         this.addEventListener(
           'form-element-register',
           this.__redispatchEventForFormRegistrarPortalMixin,
         );
       }
 
-      disconnectedCallback() {
-        if (super.disconnectedCallback) {
-          super.disconnectedCallback();
-        }
-        this.removeEventListener(
-          'form-element-register',
-          this.__redispatchEventForFormRegistrarPortalMixin,
-        );
-      }
-
-      __checkRegistrationTarget() {
+      __redispatchEventForFormRegistrarPortalMixin(ev) {
+        ev.stopPropagation();
         if (!this.registrationTarget) {
           throw new Error('A FormRegistrarPortal element requires a .registrationTarget');
         }
+        this.registrationTarget.dispatchEvent(
+          new CustomEvent('form-element-register', {
+            detail: { element: ev.detail.element },
+            bubbles: true,
+          }),
+        );
       }
     },
 );

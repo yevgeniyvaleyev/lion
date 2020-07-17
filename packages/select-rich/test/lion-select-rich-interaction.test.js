@@ -1,6 +1,5 @@
 import { Required } from '@lion/form-core';
-import { expect, html, triggerBlurFor, triggerFocusFor } from '@open-wc/testing';
-import { formFixture as fixture } from '@lion/form-core/test-helpers.js';
+import { expect, html, triggerBlurFor, triggerFocusFor, fixture } from '@open-wc/testing';
 
 import '../lion-option.js';
 import '../lion-options.js';

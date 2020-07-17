@@ -1,7 +1,6 @@
-import { expect, html, defineCE, unsafeStatic } from '@open-wc/testing';
+import { expect, html, defineCE, unsafeStatic, fixture } from '@open-wc/testing';
 import { LitElement, SlotMixin } from '@lion/core';
 import sinon from 'sinon';
-import { formFixture as fixture } from '../test-helpers/formFixture.js';
 import { FormControlMixin } from '../src/FormControlMixin.js';
 import { FormRegistrarMixin } from '../src/registration/FormRegistrarMixin.js';
 

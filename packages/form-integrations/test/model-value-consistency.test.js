@@ -1,5 +1,4 @@
-import { expect, html, unsafeStatic } from '@open-wc/testing';
-import { formFixture as fixture } from '@lion/form-core/test-helpers.js';
+import { expect, html, unsafeStatic, fixture } from '@open-wc/testing';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import sinon from 'sinon';

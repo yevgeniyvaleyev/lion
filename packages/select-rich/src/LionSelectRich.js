@@ -205,6 +205,13 @@ export class LionSelectRich extends ScopedElementsMixin(
     this.__initInteractionStates();
   }
 
+  connectedCallback() {
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
+    this._listboxNode.registrationTarget = this;
+  }
+
   firstUpdated(changedProperties) {
     super.firstUpdated(changedProperties);
 
@@ -215,7 +222,6 @@ export class LionSelectRich extends ScopedElementsMixin(
     this.__setupInvokerNode();
     this.__setupListboxNode();
     this.__setupEventListeners();
-    this._listboxNode.registrationTarget = this;
 
     // TODO: find a solution when to use the initially provided user value
     // formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
