@@ -2,7 +2,7 @@ import { html, LitElement } from '@lion/core';
 import '@lion/fieldset/lion-fieldset.js';
 import { LionInput } from '@lion/input';
 import { FormGroupMixin, Required } from '@lion/form-core';
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, aTimeout } from '@open-wc/testing';
 import { ChoiceGroupMixin } from '../../src/choice-group/ChoiceGroupMixin.js';
 import { ChoiceInputMixin } from '../../src/choice-group/ChoiceInputMixin.js';
 
@@ -64,6 +64,7 @@ describe('ChoiceGroupMixin', () => {
         <choice-group-input .choiceValue=${'other'}></choice-group-input>
       </choice-group>
     `);
+    await el.registrationComplete;
 
     expect(el.formElements[0].name).to.equal('gender');
     expect(el.formElements[1].name).to.equal('gender');
@@ -103,6 +104,7 @@ describe('ChoiceGroupMixin', () => {
         <choice-group-input .choiceValue=${'other'}></choice-group-input>
       </choice-group>
     `);
+    await el.registrationComplete;
 
     expect(el.modelValue).to.equal('other');
     expect(el.formElements[2].checked).to.be.true;
@@ -116,8 +118,10 @@ describe('ChoiceGroupMixin', () => {
         <choice-group-input .choiceValue=${'other'}></choice-group-input>
       </choice-group>
     `);
+    await el.registrationComplete;
 
     expect(el.serializedValue).to.equal('other');
+    expect(el.formElements[2].checked).to.be.true;
   });
 
   it('can handle complex data via choiceValue', async () => {
@@ -160,6 +164,7 @@ describe('ChoiceGroupMixin', () => {
         ></choice-group-input>
       </choice-group>
     `);
+    await el.registrationComplete;
 
     expect(el.modelValue).to.equal('female');
     el.modelValue = 'other';
@@ -180,6 +185,7 @@ describe('ChoiceGroupMixin', () => {
         <choice-group-input .choiceValue=${'other'}></choice-group-input>
       </choice-group>
     `);
+    await aTimeout();
 
     counter = 0; // reset after setup which may result in different results
 
@@ -273,7 +279,7 @@ describe('ChoiceGroupMixin', () => {
         </choice-group-multiple>
       `);
 
-      await el.updateComplete;
+      await el.registrationComplete;
       el.modelValue = ['male', 'other'];
       expect(el.modelValue).to.eql(['male', 'other']);
       expect(el.formElements[0].checked).to.be.true;
@@ -289,7 +295,7 @@ describe('ChoiceGroupMixin', () => {
         </choice-group-multiple>
       `);
 
-      await el.updateComplete;
+      await el.registrationComplete;
       expect(el.modelValue).to.eql(['male', 'other']);
       expect(el.formElements[0].checked).to.be.true;
       expect(el.formElements[2].checked).to.be.true;

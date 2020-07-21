@@ -269,6 +269,7 @@ describe('lion-select-rich interactions', () => {
           </lion-options>
         </lion-select-rich>
       `);
+      await el.registrationComplete;
       expect(el.modelValue).to.equal(10);
     });
 

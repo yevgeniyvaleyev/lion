@@ -136,24 +136,6 @@ export class LionSelectRich extends ScopedElementsMixin(
     return this._listboxNode.querySelector(`#${this._listboxActiveDescendant}`);
   }
 
-  get modelValue() {
-    const el = this.formElements.find(option => option.checked);
-    return el ? el.modelValue.value : '';
-  }
-
-  set modelValue(value) {
-    const el = this.formElements.find(option => option.modelValue.value === value);
-
-    if (el) {
-      el.checked = true;
-    } else {
-      // cache user set modelValue, and then try it again when registration is done
-      this.__cachedUserSetModelValue = value;
-    }
-
-    this.requestUpdate('modelValue');
-  }
-
   get serializedValue() {
     return this.modelValue;
   }
@@ -202,7 +184,6 @@ export class LionSelectRich extends ScopedElementsMixin(
     this.__hasInitialSelectedFormElement = false;
     this.hasNoDefaultSelected = false;
     this._repropagationRole = 'choice-group'; // configures FormControlMixin
-    this.__initInteractionStates();
   }
 
   connectedCallback() {
@@ -210,6 +191,10 @@ export class LionSelectRich extends ScopedElementsMixin(
       super.connectedCallback();
     }
     this._listboxNode.registrationTarget = this;
+
+    this.registrationComplete.then(() => {
+      this.__initInteractionStates();
+    });
   }
 
   firstUpdated(changedProperties) {
@@ -248,13 +233,8 @@ export class LionSelectRich extends ScopedElementsMixin(
     }
   }
 
-  async __initInteractionStates() {
-    await this.registrationComplete;
-    // This timeout is here, so that we know we handle after the initial model-value
-    // event (see firstUpdated method FormConrtolMixin) has fired.
-    setTimeout(() => {
-      this.initInteractionState();
-    });
+  __initInteractionStates() {
+    this.initInteractionState();
   }
 
   get _inputNode() {

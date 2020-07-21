@@ -39,7 +39,7 @@ describe('lion-select-rich', () => {
         </lion-options>
       </lion-select-rich>
     `);
-    await nextFrame();
+    await el.registrationComplete;
 
     expect(el.formElements[0].name).to.equal('foo');
     expect(el.formElements[1].name).to.equal('foo');
@@ -102,6 +102,7 @@ describe('lion-select-rich', () => {
         </lion-options>
       </lion-select-rich>
     `);
+    await el.registrationComplete;
 
     expect(el.modelValue).to.equal('other');
     expect(el.formElements[2].checked).to.be.true;
@@ -426,6 +427,7 @@ describe('lion-select-rich', () => {
           </lion-options>
         </lion-select-rich>
       `);
+      await el.registrationComplete;
       // The default is min, so we override that behavior here
       el._overlayCtrl.inheritsReferenceWidth = 'full';
       el._initialInheritsReferenceWidth = 'full';
