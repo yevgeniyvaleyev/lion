@@ -30,7 +30,7 @@ export const FormRegistrarMixin = dedupeMixin(
            * (multi)select)
            * @type {boolean}
            */
-          _isFormOrFieldset: Boolean,
+          _isFormOrFieldset: { type: Boolean },
         };
       }
 
@@ -42,11 +42,6 @@ export const FormRegistrarMixin = dedupeMixin(
 
         this._onRequestToAddFormElement = this._onRequestToAddFormElement.bind(this);
         this.addEventListener('form-element-register', this._onRequestToAddFormElement);
-      }
-
-      firstUpdated(changedProperties) {
-        super.firstUpdated(changedProperties);
-        this.__foo = true;
       }
 
       isRegisteredFormElement(el) {

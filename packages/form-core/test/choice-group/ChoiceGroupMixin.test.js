@@ -2,7 +2,7 @@ import { html, LitElement } from '@lion/core';
 import '@lion/fieldset/lion-fieldset.js';
 import { LionInput } from '@lion/input';
 import { FormGroupMixin, Required } from '@lion/form-core';
-import { expect, fixture, aTimeout } from '@open-wc/testing';
+import { expect, fixture } from '@open-wc/testing';
 import { ChoiceGroupMixin } from '../../src/choice-group/ChoiceGroupMixin.js';
 import { ChoiceInputMixin } from '../../src/choice-group/ChoiceInputMixin.js';
 
@@ -185,7 +185,6 @@ describe('ChoiceGroupMixin', () => {
         <choice-group-input .choiceValue=${'other'}></choice-group-input>
       </choice-group>
     `);
-    await aTimeout();
 
     counter = 0; // reset after setup which may result in different results
 
