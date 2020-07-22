@@ -191,33 +191,20 @@ export class LionSelectRich extends ScopedElementsMixin(
       super.connectedCallback();
     }
     this._listboxNode.registrationTarget = this;
-
-    this.registrationComplete.then(() => {
-      this.__initInteractionStates();
-    });
-  }
-
-  firstUpdated(changedProperties) {
-    super.firstUpdated(changedProperties);
-
-    this._overlaySetupComplete.then(() => {
-      this.__setupOverlay();
-    });
-
+    this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
     this.__setupInvokerNode();
     this.__setupListboxNode();
     this.__setupEventListeners();
 
-    // TODO: find a solution when to use the initially provided user value
-    // formRegistrarManager.addEventListener('all-forms-open-for-registration', () => {
-    //   // Now that we have rendered + registered our listbox, try setting the user defined modelValue again
-    //   if (this.__cachedUserSetModelValue) {
-    //     this.modelValue = this.__cachedUserSetModelValue;
-    //   }
-    // });
-
-    this._invokerNode.selectedElement = this.formElements[this.checkedIndex];
     this.__toggleInvokerDisabled();
+
+    this.registrationComplete.then(() => {
+      this.__initInteractionStates();
+    });
+
+    this._overlaySetupComplete.then(() => {
+      this.__setupOverlay();
+    });
   }
 
   _requestUpdate(name, oldValue) {
@@ -231,6 +218,16 @@ export class LionSelectRich extends ScopedElementsMixin(
     if (name === 'disabled' || name === 'readOnly') {
       this.__toggleInvokerDisabled();
     }
+  }
+
+  /**
+   * In the select disabled options are still going to a possible value for example
+   * when prefilling or programmatically setting it.
+   *
+   * @override
+   */
+  _getCheckedElements() {
+    return this.formElements.filter(el => el.checked);
   }
 
   __initInteractionStates() {

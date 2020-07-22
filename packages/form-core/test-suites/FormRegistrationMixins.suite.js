@@ -14,7 +14,6 @@ export const runRegistrationSuite = customConfig => {
     let parentTag;
     let childTag;
     let portalTag;
-    let portalTagString;
 
     before(async () => {
       if (!cfg.parentTagString) {
@@ -28,7 +27,6 @@ export const runRegistrationSuite = customConfig => {
       }
 
       parentTag = unsafeStatic(cfg.parentTagString);
-      portalTagString = cfg.portalTagString;
       childTag = unsafeStatic(cfg.childTagString);
       portalTag = unsafeStatic(cfg.portalTagString);
     });
@@ -127,15 +125,6 @@ export const runRegistrationSuite = customConfig => {
     });
 
     describe('FormRegistrarPortalMixin', () => {
-      it('throws if there is no .registrationTarget', async () => {
-        // we test the private api directly as errors thrown from a web component are in a
-        // different context and we can not catch them here
-        const el = document.createElement(portalTagString);
-        expect(() => {
-          el.__checkRegistrationTarget();
-        }).to.throw('A FormRegistrarPortal element requires a .registrationTarget');
-      });
-
       it('forwards registrations to the .registrationTarget', async () => {
         const el = await fixture(html`<${parentTag}></${parentTag}>`);
         await fixture(html`

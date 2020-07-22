@@ -23,7 +23,6 @@ export const FormRegisteringMixin = dedupeMixin(
       constructor() {
         super();
         this.__boundDispatchRegistration = this._dispatchRegistration.bind(this);
-        this.__dispatcher = this;
       }
 
       connectedCallback() {

@@ -25,8 +25,8 @@
     "storybook:build": "build-storybook",
     "storybook:build:start": "es-dev-server --root-dir storybook-static --open",
     "test": "run-p test:browser test:node",
-    "test:browser": "wtr packages/**/*/test/**/*.test.js --coverage",
-    "test:browser:watch": "wtr packages/fieldset/test/**/*.test.js --watch",
+    "test:browser": "wtr \"packages/**/*/test/**/*.test.js\" --coverage",
+    "test:browser:watch": "wtr \"packages/form-integrations/test/**/*.test.js\" --watch",
     "test:node": "lerna run test:node"
   },
   "devDependencies": {
@@ -41,7 +41,7 @@
     "@storybook/addon-a11y": "~5.0.0",
     "@types/chai-dom": "^0.0.8",
     "@web/dev-server-legacy": "^0.0.1",
-    "@web/test-runner": "^0.6.37",
+    "@web/test-runner": "^0.6.40",
     "@webcomponents/webcomponentsjs": "^2.2.5",
     "babel-eslint": "^8.2.6",
     "babel-polyfill": "^6.26.0",
