@@ -9,6 +9,7 @@ Its purpose is to reduce the need to scroll when presenting multiple sections of
 import { LitElement } from 'lit-element';
 import { html } from 'lit-html';
 import './lion-accordion.js';
+import '@lion/textarea/lion-textarea.js';
 
 export default {
   title: 'Navigation/Accordion',
@@ -265,6 +266,24 @@ Make sure your template re-renders when myCollection is updated.
   <p slot="content">${item.content}</p>
   `)}
 </lion-accordion>
+```
+
+```js preview-story
+export const withTextarea = () => html`
+  <lion-accordion>
+    <h3 slot="invoker">
+      <button>Lorem</button>
+    </h3>
+    <lion-textarea
+      slot="content"
+      .modelValue=${`Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+Laboriosam sequi odit cumque, enim aut assumenda itaque quis voluptas est quos fugiat unde
+labore reiciendis saepe, iure, optio officiis obcaecati quibusdam.
+`}
+    >
+    </lion-textarea>
+  </lion-accordion>
+`;
 ```
 
 ## Rationale
