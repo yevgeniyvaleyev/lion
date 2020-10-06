@@ -1,18 +1,29 @@
 import { until } from '@lion/core';
-import { aTimeout, expect, fixture, fixtureSync, html } from '@open-wc/testing';
+import { aTimeout, expect, fixture as _fixture, fixtureSync, html } from '@open-wc/testing';
 import '../lion-icon.js';
 import { icons } from '../src/icons.js';
 import hammerSvg from './hammer.svg.js';
 import heartSvg from './heart.svg.js';
 
+// TODO: fix lit-html import
+/**
+ * @typedef {import('../src/LionIcon').LionIcon} LionIcon
+ * @typedef {import('@lion/core').TemplateResult} TemplateResult
+ * @typedef { function(html):TemplateResult } tagWrapFunction
+ */
+
+const fixture = /** @type {(arg: TemplateResult) => Promise<LionIcon>} */ (_fixture);
+
 describe('lion-icon', () => {
   it('supports svg icon as a function which recieves a tag function as an argument and returns a tagged template literal', async () => {
+    /** @type { tagWrapFunction } */
     const iconFunction = tag => tag`<svg data-test-id="svg"></svg>`;
     const el = await fixture(html`<lion-icon .svg=${iconFunction}></lion-icon>`);
     expect(el.children[0].getAttribute('data-test-id')).to.equal('svg');
   });
 
   it('is hidden when attribute hidden is true', async () => {
+    /** @type { tagWrapFunction } */
     const iconFunction = tag => tag`<svg data-test-id="svg"></svg>`;
     const el = await fixture(html`<lion-icon .svg=${iconFunction} hidden></lion-icon>`);
     expect(el).not.to.be.displayed;
@@ -121,7 +132,7 @@ describe('lion-icon', () => {
     await svgLoading;
     // We need to await the until directive is resolved and rendered to the dom
     // You can not use updateComplete as until renders on it's own
-    await aTimeout();
+    await aTimeout(0);
 
     expect(el.children[0].getAttribute('data-test-id')).to.equal('svg-heart');
   });
@@ -147,7 +158,10 @@ describe('lion-icon', () => {
       icons.addIconResolver('foo', () => heartSvg);
       const el = await fixture(html`<lion-icon icon-id="foo:lorem:ipsum"></lion-icon>`);
 
-      expect(el.children[0].dataset.testId).to.equal('svg-heart');
+      /** @type { SVGElement } */
+      // @ts-ignore
+      const svgElement = el.children[0];
+      expect(svgElement.dataset.testId).to.equal('svg-heart');
     } finally {
       icons.removeIconResolver('foo');
     }
@@ -183,11 +197,14 @@ describe('lion-icon', () => {
       await el.updateComplete;
       await aTimeout(4);
 
+      /** @type { SVGElement } */
+      // @ts-ignore
+      const svgElement = el.children[0];
       // heart is still loading at this point, but hammer came later so that should be later
-      expect(el.children[0].dataset.testId).to.equal('svg-hammer');
+      expect(svgElement.dataset.testId).to.equal('svg-hammer');
       await aTimeout(10);
       // heart finished loading, but it should not be rendered because hammer came later
-      expect(el.children[0].dataset.testId).to.equal('svg-hammer');
+      expect(svgElement.dataset.testId).to.equal('svg-hammer');
     } finally {
       icons.removeIconResolver('foo');
       icons.removeIconResolver('bar');

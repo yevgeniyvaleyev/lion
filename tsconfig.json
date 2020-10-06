@@ -24,6 +24,7 @@
     "packages/fieldset/**/*.js",
     "packages/form/**/*.js",
     "packages/form-core/**/*.js",
+    "packages/icon/**/*.js",
     "packages/input/**/*.js",
     "packages/input-amount/**/*.js",
     "packages/input-date/**/*.js",
