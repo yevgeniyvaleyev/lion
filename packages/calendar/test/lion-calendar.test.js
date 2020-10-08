@@ -822,10 +822,10 @@ describe('<lion-calendar>', () => {
           ).to.equal(true);
         });
 
-        it('blocks navigation to disabled days', async () => {
+        it('allows navigation to disabled days', async () => {
           const el = await fixture(html`
             <lion-calendar
-              .selectedDate="${new Date('2000/12/31')}"
+              .selectedDate="${new Date('2000/12/08')}"
               .minDate="${new Date('2000/12/09')}"
             >
             </lion-calendar>
@@ -833,8 +833,8 @@ describe('<lion-calendar>', () => {
           const elObj = new CalendarObject(el);
           expect(
             elObj.checkForAllDayObjs(
-              /** @param {DayObject} d */ d => d.buttonEl.getAttribute('tabindex') === '-1',
-              /** @param {number} dayNumber */ dayNumber => dayNumber < 9,
+              /** @param {DayObject} d */ d => d.buttonEl.getAttribute('tabindex') === '0',
+              /** @param {number} dayNumber */ dayNumber => dayNumber === 8,
             ),
           ).to.equal(true);
         });
@@ -938,23 +938,6 @@ describe('<lion-calendar>', () => {
             );
             await el.updateComplete;
             expect(elObj.focusedDayObj?.monthday).to.equal(12 + 1);
-          });
-
-          it('navigates (sets focus) to next selectable column item via [arrow right] key', async () => {
-            const el = await fixture(html`
-              <lion-calendar
-                .selectedDate="${new Date('2001/01/02')}"
-                .disableDates=${/** @param {Date} date */ date =>
-                  date.getDate() === 3 || date.getDate() === 4}
-              ></lion-calendar>
-            `);
-            const elObj = new CalendarObject(el);
-
-            el.__contentWrapperElement?.dispatchEvent(
-              new KeyboardEvent('keydown', { key: 'ArrowRight' }),
-            );
-            await el.updateComplete;
-            expect(elObj.focusedDayObj?.monthday).to.equal(5);
           });
 
           it('navigates (sets focus) to next row via [arrow right] key if last item in row', async () => {
@@ -1382,12 +1365,57 @@ describe('<lion-calendar>', () => {
       const el = await fixture(
         html`
           <lion-calendar
-            .disableDates=${/** @param {Date} date */ date =>
-              date.getDay() === 6 || date.getDay() === 0}
+            .selectedDate=${new Date('2019/11/15')}
+            .minDate=${new Date('2019/11/04')}
+            .maxDate=${new Date('2019/11/20')}
+            .disableDates=${/** @param {Date} date */ date => date.getDay() === 6}
           ></lion-calendar>
         `,
       );
       await expect(el).to.be.accessible();
+      const elObj = new CalendarObject(el);
+      expect(
+        elObj.checkForAllDayObjs(
+          /** @param {DayObject} d */ d => d.buttonEl.getAttribute('role') === 'button',
+          /** @param {number} dayNumber */ [3, 6, 21],
+        ),
+      ).to.equal(true);
+      expect(
+        elObj.checkForAllDayObjs(
+          /** @param {DayObject} d */ d => d.buttonEl.getAttribute('aria-disabled') === 'true',
+          /** @param {number} dayNumber */ [3, 6, 21],
+        ),
+      ).to.equal(true);
+    });
+
+    it('notifies when boundarries (minDate/MaxDate) are reached', async () => {
+      const el = await fixture(
+        html`
+          <lion-calendar
+            .selectedDate=${new Date('2019/11/15')}
+            .minDate=${new Date('2019/11/04')}
+            .maxDate=${new Date('2019/11/20')}
+          ></lion-calendar>
+        `,
+      );
+      await expect(el).to.be.accessible();
+      const elObj = new CalendarObject(el);
+      expect(
+        elObj.checkForAllDayObjs(
+          /** @param {DayObject} d */ d =>
+            d.buttonEl.getAttribute('aria-label') ===
+            '3 November 1999 Wednesday before selectable date range',
+          /** @param {number} dayNumber */ [3],
+        ),
+      ).to.equal(true);
+      expect(
+        elObj.checkForAllDayObjs(
+          /** @param {DayObject} d */ d =>
+            d.buttonEl.getAttribute('aria-label') ===
+            '21 November 1999 Sunday after selectable date range',
+          /** @param {number} dayNumber */ [21],
+        ),
+      ).to.equal(true);
     });
 
     it('is hidden when attribute hidden is true', async () => {
