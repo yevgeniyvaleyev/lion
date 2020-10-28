@@ -158,6 +158,56 @@ describe('formatDate', () => {
     expect(formatDate(parsedDate, options)).to.equal('maandag 01 januari 1940');
   });
 
+  describe('Display dates correctly for each locale', () => {
+    const LOCALE_FORMATTED_DATE_MAP = {
+      'bg-BG': 'събота, 12 октомври 2019 г.',
+      'cs-CZ': 'sobota 12. října 2019',
+      'de-DE': 'Samstag, 12. Oktober 2019',
+      'en-AU': 'Saturday, 12 October 2019',
+      'en-GB': 'Saturday, 12 October 2019',
+      'en-PH': 'Saturday, 12 October 2019',
+      'en-US': 'Saturday, October 12, 2019',
+      'es-ES': 'sábado, 12 de octubre de 2019',
+      'fr-FR': 'samedi 12 octobre 2019',
+      'fr-BE': 'samedi 12 octobre 2019',
+      'hu-HU': '2019. október 12., szombat',
+      'id-ID': 'Sabtu, 12 Oktober 2019',
+      'it-IT': 'sabato 12 ottobre 2019',
+      'nl-NL': 'zaterdag 12 oktober 2019',
+      'nl-BE': 'zaterdag 12 oktober 2019',
+      'pl-PL': 'sobota, 12 października 2019',
+      'ro-RO': 'sâmbătă, 12 octombrie 2019',
+      'ru-RU': 'суббота, 12 октября 2019 г.',
+      'sk-SK': 'sobota 12. októbra 2019',
+      'tr-TR': '12 Ekim 2019 Cumartesi',
+      'uk-UA': 'субота, 12 жовтня 2019 р.',
+      'zh-CN': '2019年10月12日星期六',
+      'zh-Hans': '2019年10月12日星期六',
+      'zh-Hans-CN': '2019年10月12日星期六',
+      'zh-Hans-HK': '2019年10月12日星期六',
+      'zh-Hans-MO': '2019年10月12日星期六',
+      'zh-Hans-SG': '2019年10月12日星期六',
+      'zh-Hant': '2019年10月12日 星期六',
+      'zh-Hant-HK': '2019年10月12日星期六',
+      'zh-Hant-MO': '2019年10月12日星期六',
+      'zh-Hant-TW': '2019年10月12日 星期六',
+    };
+
+    Object.keys(SUPPORTED_LOCALES).forEach(locale => {
+      it(`displays the date as expected for locale: ${locale}`, async () => {
+        const options = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: '2-digit',
+          locale,
+        };
+        const parsedDate = /** @type {Date} */ (parseDate('12.10.2019'));
+        expect(formatDate(parsedDate, options)).to.equal(LOCALE_FORMATTED_DATE_MAP[locale]);
+      });
+    });
+  });
+
   describe('Date format options without "year"', () => {
     const LOCALE_FORMATTED_DATE_MAP = {
       'bg-BG': 'събота, 12 октомври',
@@ -207,24 +257,102 @@ describe('formatDate', () => {
     });
   });
 
-  it('handles options without month', async () => {
-    const options = {
-      weekday: 'long',
-      year: 'numeric',
-      day: '2-digit',
+  describe('Date format options without "month"', () => {
+    const LOCALE_FORMATTED_DATE_MAP = {
+      'bg-BG': '2019 г. събота, 12',
+      'cs-CZ': '2019 sobota 12.',
+      'de-DE': '2019 Samstag, 12.',
+      'en-AU': 'Saturday 12 2019',
+      'en-GB': 'Saturday 12 2019',
+      'en-PH': 'Saturday 12 2019',
+      'en-US': '12 Saturday 2019',
+      'es-ES': '2019 sábado 12',
+      'fr-FR': '2019 samedi 12',
+      'fr-BE': '2019 samedi 12',
+      'hu-HU': '2019. 12., szombat',
+      'id-ID': '2019 Sabtu, 12',
+      'it-IT': '2019 sabato 12',
+      'nl-NL': '2019 zaterdag 12',
+      'nl-BE': '2019 zaterdag 12',
+      'pl-PL': '2019 sobota, 12',
+      'ro-RO': '2019 sâmbătă 12',
+      'ru-RU': '2019 суббота, 12',
+      'sk-SK': '2019 sobota 12.',
+      'tr-TR': '2019 12 Cumartesi',
+      'uk-UA': '2019 субота, 12',
+      'zh-CN': '2019年 12日星期六',
+      'zh-Hans': '2019年 12日星期六',
+      'zh-Hans-CN': '2019年 12日星期六',
+      'zh-Hans-HK': '2019年 12日星期六',
+      'zh-Hans-MO': '2019年 12日星期六',
+      'zh-Hans-SG': '2019年 12日星期六',
+      'zh-Hant': '2019年 12 星期六',
+      'zh-Hant-HK': '2019年 12 星期六',
+      'zh-Hant-MO': '2019年 12 星期六',
+      'zh-Hant-TW': '2019年 12 星期六',
     };
-    const parsedDate = /** @type {Date} */ (parseDate('12.10.2019'));
-    expect(formatDate(parsedDate, options)).to.equal('Saturday 12 2019');
+
+    Object.keys(SUPPORTED_LOCALES).forEach(locale => {
+      it(`handles options without month for locale: ${locale}`, async () => {
+        const options = {
+          weekday: 'long',
+          year: 'numeric',
+          day: '2-digit',
+          locale,
+        };
+        const parsedDate = /** @type {Date} */ (parseDate('12.10.2019'));
+        expect(formatDate(parsedDate, options)).to.equal(LOCALE_FORMATTED_DATE_MAP[locale]);
+      });
+    });
   });
 
-  it('handles options without day', async () => {
-    const options = {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
+  describe('Date format options without "day"', () => {
+    const LOCALE_FORMATTED_DATE_MAP = {
+      'bg-BG': 'октомври 2019 г. събота',
+      'cs-CZ': 'říjen 2019 sobota',
+      'de-DE': 'Oktober 2019 Samstag',
+      'en-AU': 'October 2019 Saturday',
+      'en-GB': 'October 2019 Saturday',
+      'en-PH': 'October 2019 Saturday',
+      'en-US': 'October 2019 Saturday',
+      'es-ES': 'octubre de 2019 sábado',
+      'fr-FR': 'octobre 2019 samedi',
+      'fr-BE': 'octobre 2019 samedi',
+      'hu-HU': '2019. október szombat',
+      'id-ID': 'Oktober 2019 Sabtu',
+      'it-IT': 'ottobre 2019 sabato',
+      'nl-NL': 'oktober 2019 zaterdag',
+      'nl-BE': 'oktober 2019 zaterdag',
+      'pl-PL': 'październik 2019 sobota',
+      'ro-RO': 'octombrie 2019 sâmbătă',
+      'ru-RU': 'октябрь 2019 г. суббота',
+      'sk-SK': 'október 2019 sobota',
+      'tr-TR': 'Ekim 2019 Cumartesi',
+      'uk-UA': 'жовтень 2019 субота',
+      'zh-CN': '2019年10月 星期六',
+      'zh-Hans': '2019年10月 星期六',
+      'zh-Hans-CN': '2019年10月 星期六',
+      'zh-Hans-HK': '2019年10月 星期六',
+      'zh-Hans-MO': '2019年10月 星期六',
+      'zh-Hans-SG': '2019年10月 星期六',
+      'zh-Hant': '2019年10月 星期六',
+      'zh-Hant-HK': '2019年10月 星期六',
+      'zh-Hant-MO': '2019年10月 星期六',
+      'zh-Hant-TW': '2019年10月 星期六',
     };
-    const parsedDate = /** @type {Date} */ (parseDate('12.10.2019'));
-    expect(formatDate(parsedDate, options)).to.equal('October 2019 Saturday');
+
+    Object.keys(SUPPORTED_LOCALES).forEach(locale => {
+      it(`handles options without day for locale: ${locale}`, async () => {
+        const options = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          locale,
+        };
+        const parsedDate = /** @type {Date} */ (parseDate('12.10.2019'));
+        expect(formatDate(parsedDate, options)).to.equal(LOCALE_FORMATTED_DATE_MAP[locale]);
+      });
+    });
   });
 
   it('returns empty string when input is not a Date object', async () => {
