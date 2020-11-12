@@ -280,7 +280,7 @@ const ChoiceGroupMixinImplementation = superclass =>
      */
     _setCheckedElements(value, check) {
       for (let i = 0; i < this.formElements.length; i += 1) {
-        if (this.multipleChoice) {
+        if (this.multipleChoice && Array.isArray(value)) {
           this.formElements[i].checked = value.includes(this.formElements[i].value);
         } else if (check(this.formElements[i], value)) {
           // Allows checking against custom values e.g. formattedValue or serializedValue

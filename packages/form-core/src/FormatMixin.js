@@ -200,6 +200,12 @@ const FormatMixinImplementation = superclass =>
      * 'model'|'formatted'|'serialized'.
      */
     _calculateValues({ source } = { source: null }) {
+      if (
+        this.tagName === 'LION-LISTBOX' ||
+        this.tagName === 'LION-SELECT-RICH' ||
+        this.tagName === 'LION-COMBOBOX'
+      )
+        return;
       if (this.__preventRecursiveTrigger) return; // prevent infinite loops
 
       /** @type {boolean} */

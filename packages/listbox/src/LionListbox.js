@@ -1,5 +1,4 @@
-import { LitElement } from '@lion/core';
-import { ValidateMixin, InteractionStateMixin, FocusMixin } from '@lion/form-core';
+import { LionField } from '@lion/form-core';
 import { ListboxMixin } from './ListboxMixin.js';
 
 // TODO: could we extend from LionField?
@@ -9,6 +8,4 @@ import { ListboxMixin } from './ListboxMixin.js';
  * FormControl
  */
 // @ts-expect-error
-export class LionListbox extends ListboxMixin(
-  FocusMixin(InteractionStateMixin(ValidateMixin(LitElement))),
-) {}
+export class LionListbox extends ListboxMixin(LionField) {}
