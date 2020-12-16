@@ -8,7 +8,8 @@
 .DS_Store
 
 ## npm/yarn
-node_modules/
+**/node_modules/*
+
 npm-debug.log
 yarn-error.log
 
@@ -41,3 +42,4 @@ browserstack.err
 debug.log
 
 !packages/singleton-manager/demo/**/node_modules
+!node_modules/redaxios/

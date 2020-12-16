@@ -114,7 +114,7 @@ export const additionalHeaders = () => html`
       myAjax
         .get('./packages/ajax/docs/assets/data.json')
         .then(response => {
-          console.log(response);
+          console.log(response.data, response.config.headers);
         })
         .catch(error => {
           console.log(error);

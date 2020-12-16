@@ -1,5 +1,4 @@
-// @ts-ignore no types for bundled-es-modules/axios
-import { axios } from '@bundled-es-modules/axios';
+import axios from 'redaxios';
 import {
   cancelInterceptorFactory,
   cancelPreviousOnNewRequestInterceptorFactory,
@@ -8,29 +7,18 @@ import {
 import { jsonPrefixTransformerFactory } from './transformers.js';
 
 /**
- * @typedef {(config: {[key:string]: ?}) => { transformRequest: (data: string, headers: { [key: string]: any; }) => any;}} RequestInterceptor
- * @typedef {(config: {[key:string]: ?}) => Response} ResponseInterceptor
- *
- * @typedef {Object} AjaxConfig
- * @property {string} [jsonPrefix] prefixing the JSON string in this manner is used to help
- * prevent JSON Hijacking. The prefix renders the string syntactically invalid as a script so
- * that it cannot be hijacked. This prefix should be stripped before parsing the string as JSON.
- * @property {string} [lang] language
- * @property {boolean} [languageHeader] the Accept-Language request HTTP header advertises
- * which languages the client is able to understand, and which locale variant is preferred.
- * @property {boolean} [cancelable] if request can be canceled
- * @property {boolean} [cancelPreviousOnNewRequest] prevents concurrent requests
- */
-
-/**
  * `AjaxClass` creates the singleton instance {@link:ajax}. It is a promise based system for
  * fetching data, based on [axios](https://github.com/axios/axios).
+ * @typedef {Object} AjaxOptions
+ * @property {string|null} lang
+ * @property {boolean} languageHeader
+ * @property {boolean} cancelable
+ * @property {boolean} cancelPreviousOnNewRequest
+ * @property {string} [jsonPrefix]
+ *
+ * @typedef {import('../types/redaxiosTypes').Options & AjaxOptions} AjaxConfig
  */
 export class AjaxClass {
-  /**
-   * @property {Object} proxy the axios instance that is bound to the AjaxClass instance
-   */
-
   /**
    * @param {AjaxConfig} [config] configuration for the AjaxClass instance
    */
@@ -45,38 +33,27 @@ export class AjaxClass {
     this.proxy = axios.create(this.__config);
     this.__setupInterceptors();
 
-    /** @type {Array.<RequestInterceptor>} */
     this.requestInterceptors = [];
-    /** @type {Array.<RequestInterceptor>} */
     this.requestErrorInterceptors = [];
-    /** @type {Array.<RequestInterceptor>} */
     this.responseErrorInterceptors = [];
-    /** @type {Array.<ResponseInterceptor>} */
     this.responseInterceptors = [];
 
-    /** @type {Array.<(data: string, headers?: {[key:string]: ?}) => string>} */
     this.requestDataTransformers = [];
-    /** @type {Array.<(data: string, headers?: {[key:string]: ?}) => string>} */
     this.requestDataErrorTransformers = [];
-    /** @type {Array.<(data: string, headers?: {[key:string]: ?}) => string>} */
     this.responseDataErrorTransformers = [];
-    /** @type {Array.<(data: string, headers?: {[key:string]: ?}) => string>} */
     this.responseDataTransformers = [];
 
     this.__isInterceptorsSetup = false;
 
     if (this.__config.languageHeader) {
-      // @ts-ignore butchered something here..
       this.requestInterceptors.push(addAcceptLanguageHeaderInterceptorFactory(this.__config.lang));
     }
 
     if (this.__config.cancelable) {
-      // @ts-ignore butchered something here..
       this.requestInterceptors.push(cancelInterceptorFactory(this));
     }
 
     if (this.__config.cancelPreviousOnNewRequest) {
-      // @ts-ignore butchered something here..
       this.requestInterceptors.push(cancelPreviousOnNewRequestInterceptorFactory());
     }
 
@@ -91,12 +68,10 @@ export class AjaxClass {
    * @param {AjaxConfig} config configuration for the AjaxClass instance
    */
   set options(config) {
-    // @ts-ignore butchered something here..
     this.__config = config;
   }
 
   get options() {
-    // @ts-ignore butchered something here..
     return this.__config;
   }
 
@@ -191,10 +166,12 @@ export class AjaxClass {
 
   __setupInterceptors() {
     this.proxy.interceptors.request.use(
-      /** @param {{[key:string]: unknown}} config */ config => {
-        const configWithTransformers = this.__setupTransformers(config);
-        // @ts-ignore I dont know....
-        return this.requestInterceptors.reduce((c, i) => i(c), configWithTransformers);
+      config => {
+        // const configWithTransformers = this.__setupTransformers(config);
+        return this.requestInterceptors.reduce((c, i) => {
+          console.log(i);
+          return i(c);
+        }, config);
       },
       /** @param {Error} error */ error => {
         this.requestErrorInterceptors.forEach(i => i(error));
@@ -203,9 +180,6 @@ export class AjaxClass {
     );
 
     this.proxy.interceptors.response.use(
-      /**
-       * @param {Response} response
-       */
       response => this.responseInterceptors.reduce((r, i) => i(r), response),
       /** @param {Error} error */ error => {
         this.responseErrorInterceptors.forEach(i => i(error));
@@ -214,41 +188,41 @@ export class AjaxClass {
     );
   }
 
-  /** @param {{[key:string]: ?}} config */
-  __setupTransformers(config) {
-    const axiosTransformRequest = config.transformRequest[0];
-    const axiosTransformResponse = config.transformResponse[0];
-    return {
-      ...config,
-      /**
-       * @param {string} data
-       * @param {{[key:string]: ?}} headers
-       */
-      transformRequest: (data, headers) => {
-        try {
-          const ourData = this.requestDataTransformers.reduce((d, t) => t(d, headers), data);
-          // axios does a lot of smart things with the request that people rely on
-          // and must be the last request data transformer to do this job
-          return axiosTransformRequest(ourData, headers);
-        } catch (error) {
-          this.requestDataErrorTransformers.forEach(t => t(error));
-          throw error;
-        }
-      },
-      /**
-       * @param {string} data
-       */
-      transformResponse: data => {
-        try {
-          // axios does a lot of smart things with the response that people rely on
-          // and must be the first response data transformer to do this job
-          const axiosData = axiosTransformResponse(data);
-          return this.responseDataTransformers.reduce((d, t) => t(d), axiosData);
-        } catch (error) {
-          this.responseDataErrorTransformers.forEach(t => t(error));
-          throw error;
-        }
-      },
-    };
-  }
+  // /** @param {{[key:string]: ?}} config */
+  // __setupTransformers(config) {
+  //   const axiosTransformRequest = config.transformRequest[0];
+  //   const axiosTransformResponse = config.transformResponse[0];
+  //   return {
+  //     ...config,
+  //     /**
+  //      * @param {string} data
+  //      * @param {{[key:string]: ?}} headers
+  //      */
+  //     transformRequest: (data, headers) => {
+  //       try {
+  //         const ourData = this.requestDataTransformers.reduce((d, t) => t(d, headers), data);
+  //         // axios does a lot of smart things with the request that people rely on
+  //         // and must be the last request data transformer to do this job
+  //         return axiosTransformRequest(ourData, headers);
+  //       } catch (error) {
+  //         this.requestDataErrorTransformers.forEach(t => t(error));
+  //         throw error;
+  //       }
+  //     },
+  //     /**
+  //      * @param {string} data
+  //      */
+  //     transformResponse: data => {
+  //       try {
+  //         // axios does a lot of smart things with the response that people rely on
+  //         // and must be the first response data transformer to do this job
+  //         const axiosData = axiosTransformResponse(data);
+  //         return this.responseDataTransformers.reduce((d, t) => t(d), axiosData);
+  //       } catch (error) {
+  //         this.responseDataErrorTransformers.forEach(t => t(error));
+  //         throw error;
+  //       }
+  //     },
+  //   };
+  // }
 }

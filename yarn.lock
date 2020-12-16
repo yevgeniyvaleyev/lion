@@ -1014,11 +1014,6 @@
   resolved "https://registry.yarnpkg.com/@braintree/sanitize-url/-/sanitize-url-3.1.0.tgz#8ff71d51053cd5ee4981e5a501d80a536244f7fd"
   integrity sha512-GcIY79elgB+azP74j8vqkiXz8xLFfIzbQJdlwOPisgbKT00tviJQuEghOXSMVxJ00HoYJbGswr4kcllUc4xCcg==
 
-"@bundled-es-modules/axios@0.18.1":
-  version "0.18.1"
-  resolved "https://registry.yarnpkg.com/@bundled-es-modules/axios/-/axios-0.18.1.tgz#8beedbc92e9b0ed7df7c6cbdc6dfce84d306d80b"
-  integrity sha512-7c389uGe0dmfdedi9PQ3Om4vKg1HFzm/IntaqZ4FbXOo+gNiiPIM4He8MIkuRpgqUitbm1km0jOQ8p+tSpUp4Q==
-
 "@bundled-es-modules/fetch-mock@^6.5.2":
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/@bundled-es-modules/fetch-mock/-/fetch-mock-6.5.2.tgz#f68d78dba49ffcb5b58bede5974c8a9dd035a6fb"
@@ -10601,6 +10596,11 @@ readdirp@~3.5.0:
   integrity sha512-cMhu7c/8rdhkHXWsY+osBhfSy0JikwpHK/5+imo+LpeasTF8ouErHrlYkwT0++njiyuDvc7OFY5T3ukvZ8qmFQ==
   dependencies:
     picomatch "^2.2.1"
+
+redaxios@0.3.0:
+  version "0.3.0"
+  resolved "https://artifactory.ing.net:443/artifactory/api/npm/releases_npm_all/redaxios/-/redaxios-0.3.0.tgz#83bf141494afbe210c44f32b142b8fd73c953f02"
+  integrity sha1-g78UFJSvviEMRPMrFCuP1zyVPwI=
 
 redent@^1.0.0:
   version "1.0.0"
