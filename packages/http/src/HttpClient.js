@@ -4,10 +4,10 @@ import { HttpClientFetchError } from './HttpClientFetchError.js';
 
 /**
  * @typedef {Object} HttpClientConfig configuration for the HttpClient instance
- * @property {boolean} addAcceptLanguage the Accept-Language request HTTP header advertises
+ * @property {boolean} [addAcceptLanguage] the Accept-Language request HTTP header advertises
  * which languages the client is able to understand, and which locale variant is preferred.
- * @property {string} [xsrfCookieName] name of the XSRF cookie to read from
- * @property {string} [xsrfHeaderName] name of the XSRF header to set
+ * @property {string|null} [xsrfCookieName] name of the XSRF cookie to read from
+ * @property {string|null} [xsrfHeaderName] name of the XSRF header to set
  * @property {string} [jsonPrefix] the json prefix to use when fetching json (if any)
  */
 

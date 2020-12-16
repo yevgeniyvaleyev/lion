@@ -123,7 +123,7 @@ describe('HttpClient', () => {
     });
 
     it('removeRequestTransformer() removes a request transformer', async () => {
-      const transformer = r => new Request(`${r.url}/transformed-1`);
+      const transformer = /** */ r => new Request(`${r.url}/transformed-1`);
       http.addRequestTransformer(transformer);
       http.removeRequestTransformer(transformer);
 
@@ -159,6 +159,7 @@ describe('HttpClient', () => {
   });
 
   describe('XSRF token', () => {
+    /** @type {import('sinon').SinonStub} */
     let cookieStub;
     beforeEach(() => {
       cookieStub = stub(document, 'cookie');
@@ -194,6 +195,29 @@ describe('HttpClient', () => {
 
       const request = fetchStub.getCall(0).args[0];
       expect(request.headers.get('X-CSRF-TOKEN')).to.equal('5678');
+    });
+  });
+
+  describe('Abort', () => {
+    it('support aborting requests with AbortController', async () => {
+      fetchStub.restore();
+      let err;
+      const controller = new AbortController();
+      const { signal } = controller;
+      // Have to do a "real" request to be able to abort it and verify that this throws
+      const req = http.request(new URL('./foo.json', import.meta.url).pathname, {
+        method: 'GET',
+        signal,
+      });
+      controller.abort();
+
+      try {
+        await req;
+      } catch (e) {
+        err = e;
+      }
+
+      expect(err.message).to.equal('The user aborted a request.');
     });
   });
 });
