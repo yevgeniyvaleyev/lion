@@ -1,6 +1,7 @@
 import { html, css } from '@lion/core';
 import { LionCheckbox } from './LionCheckbox.js';
 
+// @ts-expect-error false positive for incompatible static get properties. Lit-element merges super properties already for you.
 export class LionCheckboxIndeterminate extends LionCheckbox {
   static get properties() {
     return {
@@ -15,14 +16,16 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
   }
 
   get _checkboxGroupNode() {
-    return /** @type {import('./LionCheckboxGroup').LionCheckboxGroup} */ (this.parentElement);
+    return /** @type {import('./LionCheckboxGroup').LionCheckboxGroup} */ (this.__parentFormGroup);
   }
 
   get _subCheckboxes() {
-    return this._checkboxGroupNode.formElements.filter(checkbox => checkbox !== this);
+    return this._checkboxGroupNode.formElements.filter(
+      checkbox => checkbox !== this && this.contains(checkbox),
+    );
   }
 
-  _parentModelValueChanged() {
+  _setOwnCheckedState() {
     const checkedElements = this._subCheckboxes.filter(checkbox => checkbox.checked);
     switch (this._subCheckboxes.length - checkedElements.length) {
       // all checked
@@ -40,48 +43,38 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
     }
   }
 
-  _ownInputChanged() {
-    this._subCheckboxes.forEach(checkbox => {
-      // eslint-disable-next-line no-param-reassign
-      checkbox.checked = this._inputNode.checked;
-    });
-  }
-
   /**
-   * @override
-   * clicking on indeterminate status will set the status as checked
+   * @override ChoiceInputMixin
+   * first set subCheckboxes if event came from itself
+   * then set own checked + indeterminate state
+   * @param {Event} ev
    */
-  // eslint-disable-next-line class-methods-use-this
-  __toggleChecked() {}
+  __toggleChecked(ev) {
+    if (this.disabled) {
+      return;
+    }
+
+    if (ev.target === this) {
+      this._subCheckboxes.forEach(checkbox => {
+        // eslint-disable-next-line no-param-reassign
+        checkbox.checked = this._inputNode.checked;
+      });
+    }
+    this._setOwnCheckedState();
+  }
 
   // eslint-disable-next-line class-methods-use-this
   _afterTemplate() {
     return html`
-    <div class"nestedCheckboxes">
-      <slot></slot>
-    </div>`;
+      <div class="choice-field__nested-checkboxes">
+        <slot name="content"></slot>
+      </div>
+    `;
   }
 
   constructor() {
     super();
     this.indeterminate = false;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this._parentModelValueChanged = this._parentModelValueChanged.bind(this);
-    this._checkboxGroupNode.addEventListener('model-value-changed', this._parentModelValueChanged);
-    this._ownInputChanged = this._ownInputChanged.bind(this);
-    this._inputNode.addEventListener('change', this._ownInputChanged.bind(this));
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this._checkboxGroupNode.removeEventListener(
-      'model-value-changed',
-      this._parentModelValueChanged,
-    );
-    this._inputNode.removeEventListener('change', this._ownInputChanged);
   }
 
   /** @param {import('lit-element').PropertyValues } changedProperties */
@@ -97,11 +90,11 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
     return [
       superCtor.styles ? superCtor.styles : [],
       css`
-        :host .nestedCheckboxes {
+        :host .choice-field__nested-checkboxes {
           display: block;
         }
 
-        :host ::slotted(lion-checkbox) {
+        ::slotted([slot='content']) {
           padding-left: 8px;
         }
       `,

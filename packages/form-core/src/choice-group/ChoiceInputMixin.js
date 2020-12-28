@@ -197,7 +197,9 @@ const ChoiceInputMixinImplementation = superclass =>
       this.removeEventListener('user-input-changed', this.__toggleChecked);
     }
 
-    __toggleChecked() {
+    /** @param {Event} ev */
+    // eslint-disable-next-line no-unused-vars
+    __toggleChecked(ev) {
       if (this.disabled) {
         return;
       }
