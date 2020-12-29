@@ -5,7 +5,7 @@ import { FormatMixin } from '../FormatMixin.js';
 
 /**
  * @typedef {import('../../types/FormControlMixinTypes').FormControlHost} FormControlHost
- * @typedef {FormControlHost & HTMLElement & {__parentFormGroup?:HTMLElement, checked?:boolean}} FormControl
+ * @typedef {FormControlHost & HTMLElement & {_parentFormGroup?:HTMLElement, checked?:boolean}} FormControl
  * @typedef {import('../../types/choice-group/ChoiceInputMixinTypes').ChoiceInputMixin} ChoiceInputMixin
  * @typedef {import('../../types/choice-group/ChoiceInputMixinTypes').ChoiceInputModelValue} ChoiceInputModelValue
  */
@@ -115,9 +115,9 @@ const ChoiceInputMixinImplementation = superclass =>
       if (
         changedProperties.has('name') &&
         // @ts-expect-error not all choice inputs have a parent form group, since this mixin does not have a strict contract with the registration system
-        this.__parentFormGroup &&
+        this._parentFormGroup &&
         // @ts-expect-error
-        this.__parentFormGroup.name !== this.name
+        this._parentFormGroup.name !== this.name
       ) {
         // @ts-expect-error not all choice inputs have a name prop, because this mixin does not have a strict contract with form control mixin
         this.name = changedProperties.get('name');

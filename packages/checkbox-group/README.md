@@ -242,9 +242,9 @@ export const event = () => html`
 export const indeterminate = () => html`
   <lion-checkbox-group name="scientists[]">
     <lion-checkbox-indeterminate label="Favorite scientists">
-      <lion-checkbox slot="content" label="Archimedes"></lion-checkbox>
-      <lion-checkbox slot="content" label="Francis Bacon"></lion-checkbox>
-      <lion-checkbox slot="content" label="Marie Curie"></lion-checkbox>
+      <lion-checkbox slot="checkbox" label="Archimedes"></lion-checkbox>
+      <lion-checkbox slot="checkbox" label="Francis Bacon"></lion-checkbox>
+      <lion-checkbox slot="checkbox" label="Marie Curie"></lion-checkbox>
     </lion-checkbox-indeterminate>
   </lion-checkbox-group>
 `;
@@ -254,18 +254,26 @@ export const indeterminate = () => html`
 export const indeterminateSiblings = () => html`
   <lion-checkbox-group name="scientists[]" label="Favorite scientists">
     <lion-checkbox-indeterminate label="Old Greek scientists">
-      <lion-checkbox slot="content" label="Archimedes" .choiceValue=${'Archimedes'}></lion-checkbox>
-      <lion-checkbox slot="content" label="Plato" .choiceValue=${'Plato'}></lion-checkbox>
-      <lion-checkbox slot="content" label="Pythagoras" .choiceValue=${'Pythagoras'}></lion-checkbox>
+      <lion-checkbox
+        slot="checkbox"
+        label="Archimedes"
+        .choiceValue=${'Archimedes'}
+      ></lion-checkbox>
+      <lion-checkbox slot="checkbox" label="Plato" .choiceValue=${'Plato'}></lion-checkbox>
+      <lion-checkbox
+        slot="checkbox"
+        label="Pythagoras"
+        .choiceValue=${'Pythagoras'}
+      ></lion-checkbox>
     </lion-checkbox-indeterminate>
     <lion-checkbox-indeterminate label="17th Century scientists">
       <lion-checkbox
-        slot="content"
+        slot="checkbox"
         label="Isaac Newton"
         .choiceValue=${'Isaac Newton'}
       ></lion-checkbox>
       <lion-checkbox
-        slot="content"
+        slot="checkbox"
         label="Galileo Galilei"
         .choiceValue=${'Galileo Galilei'}
       ></lion-checkbox>
@@ -279,24 +287,24 @@ export const indeterminateChildren = () => html`
   <lion-checkbox-group name="scientists[]" label="Favorite scientists">
     <lion-checkbox-indeterminate label="Scientists">
       <lion-checkbox
-        slot="content"
+        slot="checkbox"
         label="Isaac Newton"
         .choiceValue=${'Isaac Newton'}
       ></lion-checkbox>
       <lion-checkbox
-        slot="content"
+        slot="checkbox"
         label="Galileo Galilei"
         .choiceValue=${'Galileo Galilei'}
       ></lion-checkbox>
-      <lion-checkbox-indeterminate slot="content" label="Old Greek scientists">
+      <lion-checkbox-indeterminate slot="checkbox" label="Old Greek scientists">
         <lion-checkbox
-          slot="content"
+          slot="checkbox"
           label="Archimedes"
           .choiceValue=${'Archimedes'}
         ></lion-checkbox>
-        <lion-checkbox slot="content" label="Plato" .choiceValue=${'Plato'}></lion-checkbox>
+        <lion-checkbox slot="checkbox" label="Plato" .choiceValue=${'Plato'}></lion-checkbox>
         <lion-checkbox
-          slot="content"
+          slot="checkbox"
           label="Pythagoras"
           .choiceValue=${'Pythagoras'}
         ></lion-checkbox>

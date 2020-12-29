@@ -16,7 +16,7 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
   }
 
   get _checkboxGroupNode() {
-    return /** @type {import('./LionCheckboxGroup').LionCheckboxGroup} */ (this.__parentFormGroup);
+    return /** @type {import('./LionCheckboxGroup').LionCheckboxGroup} */ (this._parentFormGroup);
   }
 
   get _subCheckboxes() {
@@ -67,7 +67,7 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
   _afterTemplate() {
     return html`
       <div class="choice-field__nested-checkboxes">
-        <slot name="content"></slot>
+        <slot name="checkbox"></slot>
       </div>
     `;
   }
@@ -94,7 +94,7 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
           display: block;
         }
 
-        ::slotted([slot='content']) {
+        ::slotted([slot='checkbox']) {
           padding-left: 8px;
         }
       `,
