@@ -49,7 +49,7 @@ export class LionCheckboxIndeterminate extends LionCheckbox {
    * then set own checked + indeterminate state
    * @param {Event} ev
    */
-  __toggleChecked(ev) {
+  _toggleChecked(ev) {
     if (this.disabled) {
       return;
     }

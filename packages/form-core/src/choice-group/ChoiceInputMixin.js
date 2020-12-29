@@ -128,7 +128,7 @@ const ChoiceInputMixinImplementation = superclass =>
       super();
       this.modelValue = { value: '', checked: false };
       this.disabled = false;
-      this.__toggleChecked = this.__toggleChecked.bind(this);
+      this._toggleChecked = this._toggleChecked.bind(this);
     }
 
     /**
@@ -189,17 +189,17 @@ const ChoiceInputMixinImplementation = superclass =>
 
     connectedCallback() {
       super.connectedCallback();
-      this.addEventListener('user-input-changed', this.__toggleChecked);
+      this.addEventListener('user-input-changed', this._toggleChecked);
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
-      this.removeEventListener('user-input-changed', this.__toggleChecked);
+      this.removeEventListener('user-input-changed', this._toggleChecked);
     }
 
     /** @param {Event} ev */
     // eslint-disable-next-line no-unused-vars
-    __toggleChecked(ev) {
+    _toggleChecked(ev) {
       if (this.disabled) {
         return;
       }

@@ -39,7 +39,7 @@ export declare class ChoiceInputHost {
   connectedCallback(): void;
   disconnectedCallback(): void;
 
-  __toggleChecked(ev: Event): void;
+  _toggleChecked(ev: Event): void;
 
   __syncModelCheckedToChecked(checked: boolean): void;
 
